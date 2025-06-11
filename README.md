@@ -17,7 +17,7 @@ The service provides user registration, login, logout, and session management fe
 | Layer     | Technology        |
 |-----------|-------------------|
 | Frontend  | React, Axios      |
-| Backend   | Go (Gin/Fiber)    |
+| Backend   | Go (Gin)    |
 | Identity  | Ory Kratos        |
 | Protocols | HTTP, JSON, REST  |
 
