@@ -1,0 +1,49 @@
+version: "3.9"
+
+services:
+  postgres:
+    image: postgres:14
+    container_name: kratos-postgres
+    restart: always
+    environment:
+      POSTGRES_DB: ory_kratos
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+    ports:
+      - "5433:5432"
+    volumes:
+      - kratos-db:/var/lib/postgresql/data
+
+  kratos-migrate:
+    image: oryd/kratos:v1.1.0
+    container_name: kratos-migrate
+    depends_on:
+      - postgres
+    environment:
+      - DSN=postgres://postgres:password@kratos-postgres:5432/ory_kratos?sslmode=disable
+    volumes:
+      - ./kratos/config:/etc/config/kratos:ro
+    command: migrate sql -e --yes -c /etc/config/kratos/kratos.yml
+    restart: "no"
+
+  kratos:
+    image: oryd/kratos:v1.1.0
+    container_name: kratos
+    depends_on:
+      - kratos-migrate
+    ports:
+      - "4433:4433" 
+      - "4434:4434" 
+    environment:
+      - DSN=postgres://postgres:password@kratos-postgres:5432/ory_kratos?sslmode=disable
+      - LOG_LEVEL=debug
+      - LOG_LEAK_SENSITIVE_VALUES=true
+      - SESSION_COOKIE_SAME_SITE=Lax
+      - SESSION_COOKIE_DOMAIN=localhost
+    command: serve --dev -c /etc/config/kratos/kratos.yml
+    volumes:
+      - ./kratos/config:/etc/config/kratos:ro
+    restart: unless-stopped
+
+volumes:
+  kratos-db:

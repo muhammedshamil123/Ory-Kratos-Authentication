@@ -1,0 +1,76 @@
+dsn: ${DSN}
+
+log:
+  level: debug
+  format: text
+  leak_sensitive_values: true
+
+secrets:
+  cookie:
+    - "thirty-two-(32)-character-secret-key"
+
+session:
+  cookie:
+    same_site: Lax
+    domain: localhost
+
+serve:
+  public:
+    base_url: http://localhost:4433
+    cors:
+      enabled: true
+      allowed_origins:
+        - http://localhost:3000
+      allowed_methods:
+        - GET
+        - POST
+        - OPTIONS
+        - PUT
+        - PATCH
+        - DELETE
+      allowed_headers:
+        - Authorization
+        - Cookie
+        - Content-Type
+        - Accept
+        - X-Requested-With
+      exposed_headers:
+        - Content-Type
+        - Set-Cookie
+      allow_credentials: true
+  admin:
+    base_url: http://localhost:4434
+
+identity:
+  schemas:
+    - id: default
+      url: file:///etc/config/kratos/identity.schema.json
+
+selfservice:
+  default_browser_return_url: http://localhost:3000/
+  allowed_return_urls:
+    - http://localhost:3000
+  flows:
+    login:
+      ui_url: http://localhost:3000/login
+    registration:
+      ui_url: http://localhost:3000/register
+      after:
+        password:
+          default_browser_return_url: http://localhost:3000/
+    logout:
+      after:
+        default_browser_return_url: http://localhost:3000/
+
+
+hashers:
+  argon2:
+    parallelism: 1
+    memory: 512MB
+    iterations: 2
+    salt_length: 16
+    key_length: 16
+
+courier:
+  smtp:
+    connection_uri: smtps://stub:stub@stub.stub:465
