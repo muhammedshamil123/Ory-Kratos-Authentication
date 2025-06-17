@@ -1,0 +1,9 @@
+p, admin,   data1, *
+p, writer,  data1, write
+p, writer,  data1, read
+p, reader,    data1, read
+
+
+g, alice, admin
+g, bob, writer
+g, charlie, reader

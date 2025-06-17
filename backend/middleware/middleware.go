@@ -2,6 +2,7 @@ package middleware
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -46,7 +47,7 @@ func RequireKratosSession() gin.HandlerFunc {
 			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": "Failed to decode session"})
 			return
 		}
-
+		fmt.Println(session.Identity.ID)
 		c.Set("user", session.Identity)
 		c.Next()
 	}

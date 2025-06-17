@@ -4,13 +4,15 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
 	"os"
 
 	"github.com/gin-gonic/gin"
+	"github.com/google/go-github/v55/github"
 	"github.com/joho/godotenv"
 	"golang.org/x/oauth2"
-	"golang.org/x/oauth2/github"
+	ghoauth "golang.org/x/oauth2/github"
 )
 
 var githubOauthConfig *oauth2.Config
@@ -29,7 +31,7 @@ func init() {
 		ClientSecret: clientSecret,
 		Scopes:       []string{"repo"},
 		RedirectURL:  "http://localhost:8080/github/callback",
-		Endpoint:     github.Endpoint,
+		Endpoint:     ghoauth.Endpoint,
 	}
 }
 
@@ -122,4 +124,53 @@ func GitHubRepos(c *gin.Context) {
 	json.NewDecoder(resp.Body).Decode(&repos)
 
 	c.JSON(http.StatusOK, repos)
+}
+
+func GetIdentities(c *gin.Context) {
+
+	resp, err := http.Get("http://localhost:4434/admin/identities")
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to connect to Kratos"})
+		return
+	}
+	defer resp.Body.Close()
+
+	c.Status(resp.StatusCode)
+	c.Header("Content-Type", "application/json")
+	io.Copy(c.Writer, resp.Body)
+}
+
+func CreateRepoHandler(c *gin.Context) {
+	fmt.Println("hello")
+	var body struct {
+		Name string `json:"name"`
+	}
+
+	if err := c.BindJSON(&body); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"message": "Invalid input"})
+		return
+	}
+
+	token, err := c.Cookie("github_token")
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Missing GitHub token"})
+		return
+	}
+
+	client := oauth2.NewClient(context.Background(), oauth2.StaticTokenSource(
+		&oauth2.Token{AccessToken: token},
+	))
+
+	repo := &github.Repository{
+		Name:    github.String(body.Name),
+		Private: github.Bool(false),
+	}
+
+	createdRepo, _, err := github.NewClient(client).Repositories.Create(context.Background(), "", repo)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, createdRepo)
 }

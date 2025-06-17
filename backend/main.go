@@ -26,7 +26,10 @@ func main() {
 	router.GET("/login/github", handler.GitHubLogin)
 	router.GET("/github/callback", handler.GitHubCallback)
 	router.GET("/github/repos", handler.GitHubRepos)
+	router.POST("/github/create-repo", handler.CreateRepoHandler)
 	router.POST("/logout", handler.Logout)
+
+	router.GET("/api/admin/identities", handler.GetIdentities)
 
 	router.Run(":8080")
 }
