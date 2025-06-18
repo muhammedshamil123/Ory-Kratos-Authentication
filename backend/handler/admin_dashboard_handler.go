@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"fmt"
 	"io"
 	"net/http"
 
@@ -19,4 +20,5 @@ func GetIdentities(c *gin.Context) {
 	c.Status(resp.StatusCode)
 	c.Header("Content-Type", "application/json")
 	io.Copy(c.Writer, resp.Body)
+	fmt.Println("resp body: ", resp.Body)
 }

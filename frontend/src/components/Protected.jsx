@@ -40,8 +40,8 @@ function Protected() {
                 if (!identitiesRes.ok) {
                     throw new Error('Failed to fetch identities');
                 }
-
                 const identitiesData = await identitiesRes.json();
+                console.log(identitiesRes,identitiesData)
                 setIdentities(identitiesData);
             } catch (err) {
                 console.error('Fetch error:', err);

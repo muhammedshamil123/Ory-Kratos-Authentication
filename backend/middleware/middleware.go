@@ -3,11 +3,11 @@ package middleware
 import (
 	"encoding/json"
 	"fmt"
+	"log"
 	"net/http"
 
 	"github.com/casbin/casbin/v2"
-	"github.com/casbin/casbin/v2/model"
-	fileadapter "github.com/casbin/casbin/v2/persist/file-adapter"
+	mongodbadapter "github.com/casbin/mongodb-adapter/v3"
 	"github.com/gin-gonic/gin"
 )
 
@@ -21,21 +21,39 @@ type Identity struct {
 }
 
 func InitCasbin() (*casbin.Enforcer, error) {
-	m, err := model.NewModelFromFile("model.config")
+
+	adapter, _ := mongodbadapter.NewAdapter("mongodb://localhost:27017/casbin")
+
+	enforcer, err := casbin.NewEnforcer("model.config", adapter)
 	if err != nil {
+		log.Fatalf("failed to create enforcer: %v", err)
+	}
+
+	if err := enforcer.LoadPolicy(); err != nil {
 		return nil, err
 	}
-	a := fileadapter.NewAdapter("policy.csv")
-	e, err := casbin.NewEnforcer(m, a)
-	if err != nil {
-		return nil, err
-	}
-	err = e.LoadPolicy()
-	if err != nil {
-		return nil, err
-	}
-	return e, nil
+	// seedPolicy(enforcer)
+	return enforcer, nil
 }
+
+// func seedPolicy(e *casbin.Enforcer) {
+
+// 	_, _ = e.AddPolicy("writer", "/github/repos", "POST")
+// 	_, _ = e.AddPolicy("reader", "/github/repos", "GET")
+// 	_, _ = e.AddPolicy("admin", "/protected", "GET")
+
+// 	// Role hierarchy
+// 	_, _ = e.AddGroupingPolicy("admin", "writer")
+// 	_, _ = e.AddGroupingPolicy("admin", "reader")
+// 	_, _ = e.AddGroupingPolicy("writer", "reader")
+
+// 	// Map users (UUIDs from Kratos) to roles
+// 	_, _ = e.AddGroupingPolicy("5a833c71-e6e8-4388-9c7c-39ac8a00055d", "admin")
+// 	_, _ = e.AddGroupingPolicy("6f652339-2ee8-4330-8a0f-47bd3214bea9", "reader")
+// 	_, _ = e.AddGroupingPolicy("2162fe0d-dd24-4530-80ae-ee6d9baadf50", "writer")
+
+// 	_ = e.SavePolicy()
+// }
 
 func AuthorizationMiddleware(e *casbin.Enforcer) gin.HandlerFunc {
 	return func(c *gin.Context) {
