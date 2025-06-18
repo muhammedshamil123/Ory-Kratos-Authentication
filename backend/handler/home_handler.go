@@ -3,37 +3,12 @@ package handler
 import (
 	"context"
 	"encoding/json"
-	"fmt"
-	"io"
 	"net/http"
-	"os"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/go-github/v55/github"
-	"github.com/joho/godotenv"
 	"golang.org/x/oauth2"
-	ghoauth "golang.org/x/oauth2/github"
 )
-
-var githubOauthConfig *oauth2.Config
-
-func init() {
-	err := godotenv.Load(".env")
-	if err != nil {
-		fmt.Println("Warning: .env file not found or failed to load")
-	}
-
-	clientID := os.Getenv("GITHUB_CLIENT_ID")
-	clientSecret := os.Getenv("GITHUB_CLIENT_SECRET")
-
-	githubOauthConfig = &oauth2.Config{
-		ClientID:     clientID,
-		ClientSecret: clientSecret,
-		Scopes:       []string{"repo"},
-		RedirectURL:  "http://localhost:8080/github/callback",
-		Endpoint:     ghoauth.Endpoint,
-	}
-}
 
 func HomePage(c *gin.Context) {
 	user, exists := c.Get("user")
@@ -82,28 +57,6 @@ func Logout(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"logout_url": resData.LogoutURL})
 }
 
-func GitHubLogin(c *gin.Context) {
-
-	url := githubOauthConfig.AuthCodeURL("random-state")
-	c.Redirect(http.StatusTemporaryRedirect, url)
-}
-
-func GitHubCallback(c *gin.Context) {
-	code := c.Query("code")
-	if code == "" {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Missing code"})
-		return
-	}
-	token, err := githubOauthConfig.Exchange(context.Background(), code)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to exchange code"})
-		return
-	}
-
-	c.SetCookie("github_token", token.AccessToken, 3600, "/", "localhost", false, true)
-	c.Redirect(http.StatusSeeOther, "http://localhost:3000")
-}
-
 func GitHubRepos(c *gin.Context) {
 	token, err := c.Cookie("github_token")
 	if err != nil {
@@ -124,20 +77,6 @@ func GitHubRepos(c *gin.Context) {
 	json.NewDecoder(resp.Body).Decode(&repos)
 
 	c.JSON(http.StatusOK, repos)
-}
-
-func GetIdentities(c *gin.Context) {
-
-	resp, err := http.Get("http://localhost:4434/admin/identities")
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to connect to Kratos"})
-		return
-	}
-	defer resp.Body.Close()
-
-	c.Status(resp.StatusCode)
-	c.Header("Content-Type", "application/json")
-	io.Copy(c.Writer, resp.Body)
 }
 
 func CreateRepoHandler(c *gin.Context) {
