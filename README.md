@@ -8,7 +8,7 @@ This project implements a secure and scalable authentication system using:
 
 ## 🧩 Overview
 
-The service provides user registration, login, logout, and session management features. It leverages **Ory Kratos** as the identity management system while the **Go** backend interacts with Kratos APIs and serves custom business logic. The **React** frontend provides a user-friendly interface for authentication flows.
+The service provides user registration, login, logout,github login, github repos and session management features. It leverages **Ory Kratos** as the identity management system while the **Go** backend interacts with Kratos APIs and serves custom business logic. The **React** frontend provides a user-friendly interface for authentication flows.
 
 ---
 
@@ -17,7 +17,7 @@ The service provides user registration, login, logout, and session management fe
 | Layer     | Technology        |
 |-----------|-------------------|
 | Frontend  | React, Axios      |
-| Backend   | Go (Gin/Fiber)    |
+| Backend   | Go (Gin)          |
 | Identity  | Ory Kratos        |
 | Protocols | HTTP, JSON, REST  |
 
