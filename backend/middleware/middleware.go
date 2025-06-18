@@ -2,7 +2,6 @@ package middleware
 
 import (
 	"encoding/json"
-	"fmt"
 	"log"
 	"net/http"
 
@@ -36,24 +35,25 @@ func InitCasbin() (*casbin.Enforcer, error) {
 	return enforcer, nil
 }
 
-// func seedPolicy(e *casbin.Enforcer) {
+func seedPolicy(e *casbin.Enforcer) {
 
-// 	_, _ = e.AddPolicy("writer", "/github/repos", "POST")
-// 	_, _ = e.AddPolicy("reader", "/github/repos", "GET")
-// 	_, _ = e.AddPolicy("admin", "/protected", "GET")
+	_, _ = e.AddPolicy("reader", "/home", "GET")
+	_, _ = e.AddPolicy("reader", "/login/github", "GET")
+	_, _ = e.AddPolicy("reader", "/github/callback", "GET")
+	_, _ = e.AddPolicy("admin", "/api/admin/identities", "GET")
 
-// 	// Role hierarchy
-// 	_, _ = e.AddGroupingPolicy("admin", "writer")
-// 	_, _ = e.AddGroupingPolicy("admin", "reader")
-// 	_, _ = e.AddGroupingPolicy("writer", "reader")
+	// 	// Role hierarchy
+	// 	_, _ = e.AddGroupingPolicy("admin", "writer")
+	// 	_, _ = e.AddGroupingPolicy("admin", "reader")
+	// 	_, _ = e.AddGroupingPolicy("writer", "reader")
 
-// 	// Map users (UUIDs from Kratos) to roles
-// 	_, _ = e.AddGroupingPolicy("5a833c71-e6e8-4388-9c7c-39ac8a00055d", "admin")
-// 	_, _ = e.AddGroupingPolicy("6f652339-2ee8-4330-8a0f-47bd3214bea9", "reader")
-// 	_, _ = e.AddGroupingPolicy("2162fe0d-dd24-4530-80ae-ee6d9baadf50", "writer")
+	// 	// Map users (UUIDs from Kratos) to roles
+	// 	_, _ = e.AddGroupingPolicy("5a833c71-e6e8-4388-9c7c-39ac8a00055d", "admin")
+	// 	_, _ = e.AddGroupingPolicy("6f652339-2ee8-4330-8a0f-47bd3214bea9", "reader")
+	// 	_, _ = e.AddGroupingPolicy("2162fe0d-dd24-4530-80ae-ee6d9baadf50", "writer")
 
-// 	_ = e.SavePolicy()
-// }
+	_ = e.SavePolicy()
+}
 
 func AuthorizationMiddleware(e *casbin.Enforcer) gin.HandlerFunc {
 	return func(c *gin.Context) {
@@ -86,7 +86,6 @@ func AuthorizationMiddleware(e *casbin.Enforcer) gin.HandlerFunc {
 			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": "Failed to decode session"})
 			return
 		}
-		fmt.Println(session.Identity.ID)
 
 		user := session.Identity.ID
 		obj := c.Request.URL.Path
@@ -97,7 +96,6 @@ func AuthorizationMiddleware(e *casbin.Enforcer) gin.HandlerFunc {
 			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": "Internal error"})
 			return
 		}
-		fmt.Println(user, obj, act)
 		if !ok {
 			c.AbortWithStatusJSON(http.StatusForbidden, gin.H{"error": "Access denied"})
 			return

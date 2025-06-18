@@ -53,24 +53,34 @@ function Signup() {
     e.preventDefault();
     if (!flowId) return;
 
-    const data = {
-      method: 'password',
-      csrf_token: csrfToken,
-      password: password,
-      traits: {
-        email: email,
-        name: name,
-        role: 'user',
-      },
-    };
+    // const data = {
+    //   method: 'password',
+    //   csrf_token: csrfToken,
+    //   password: password,
+    //   traits: {
+    //     email: email,
+    //     name: name,
+    //     role: 'user',
+    //   },
+    // };
 
     axios
-      .post(`${KRATOS_PUBLIC_URL}/self-service/registration?flow=${flowId}`, data, {
-        withCredentials: true,
-      })
+      .post("http://localhost:8080/api/register", {
+        flow: flowId,
+        data: {
+          method: "password",
+          csrf_token: csrfToken,
+          traits: {
+            email: email,
+            name: name,
+            role: 'user',
+          },
+          password: password,
+        },
+      }, { withCredentials: true })
       .then(() => {
-        console.log('Signup successful');
-        navigate('/login');
+        console.log("Signup successful");
+        navigate("/login");
       })
       .catch((err) => {
         console.error('Registration Error:', err);

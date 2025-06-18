@@ -28,17 +28,17 @@ func main() {
 		log.Fatalf("Casbin init failed: %v", err)
 	}
 
-	router.GET("/home", middleware.RequireKratosSession(), handler.HomePage)
+	router.GET("/home", middleware.AuthorizationMiddleware(enforcer), handler.HomePage)
+	router.POST("/logout", handler.Logout)
 
-	router.GET("/login/github", handler.GitHubLogin)
-	router.GET("/github/callback", handler.GitHubCallback)
+	router.GET("/login/github", middleware.AuthorizationMiddleware(enforcer), handler.GitHubLogin)
+	router.GET("/github/callback", middleware.AuthorizationMiddleware(enforcer), handler.GitHubCallback)
 	router.GET("/github/repos", middleware.AuthorizationMiddleware(enforcer), handler.GitHubRepos)
 	router.POST("/github/repos", middleware.AuthorizationMiddleware(enforcer), handler.CreateRepoHandler)
 
-	router.POST("/logout", handler.Logout)
-
+	router.POST("/api/register", handler.RegisterHandler(enforcer))
 	router.GET("/protected", middleware.AuthorizationMiddleware(enforcer), handler.HomePage)
-	router.GET("/api/admin/identities", handler.GetIdentities)
+	router.GET("/api/admin/identities", middleware.AuthorizationMiddleware(enforcer), handler.GetIdentities)
 
 	router.Run(":8080")
 }
