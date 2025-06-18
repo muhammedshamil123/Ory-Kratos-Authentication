@@ -1,9 +1,12 @@
-p, admin,   *, *
+
 p, writer,  /github/repos, POST
-p, writer,  /github/repos, GET
 p, reader,    /github/repos, GET
+p, admin,   /protected, GET
 
 
-g, alice, admin
-g, bob, writer
-g, charlie, reader
+g, admin, writer
+g, admin, reader
+g, writer, reader
+g, 5a833c71-e6e8-4388-9c7c-39ac8a00055d, admin
+g, 6f652339-2ee8-4330-8a0f-47bd3214bea9, reader
+g, 2162fe0d-dd24-4530-80ae-ee6d9baadf50, writer

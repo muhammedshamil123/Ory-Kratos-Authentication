@@ -9,18 +9,12 @@ function Protected() {
     useEffect(()=>{
         const fetchData = async () => {
             try {
-                const userRes = await fetch('http://localhost:8080/home', {
+                const userRes = await fetch('http://localhost:8080/protected', {
                 method: 'GET',
                 credentials: 'include',
                 });
 
                 if (!userRes.ok) {
-                throw new Error('Unauthorized');
-                }
-
-                const userData = await userRes.json();
-                setUser(userData.user.traits);
-                if (userData.user.traits?.role !=='admin') {
                     await Swal.fire({
                         icon: 'error',
                         title: 'Oops!',
@@ -32,6 +26,9 @@ function Protected() {
                     });
                     navigate('/');
                 }
+
+                const userData = await userRes.json();
+                setUser(userData.user.traits);
                 const identitiesRes = await fetch('http://localhost:8080/api/admin/identities', {
                     method: 'GET',
                     credentials: 'include', 
@@ -59,6 +56,9 @@ function Protected() {
             <h1 className="text-2xl font-semibold text-[#f0f0f5]">Admin Dashboard</h1>
         </nav>
         <main className="max-w-4xl mx-auto mt-12 p-8 bg-[#2b2b3c] rounded-lg shadow-md  ">
+            <h2 className="text-3xl font-bold text-[#cdd9e5] mb-4">
+            Welcome, {user?.name}
+          </h2>
             <h2 className="text-xl font-bold mb-4">All Users</h2>
             <ul className="space-y-4">
                 {identities.map(identity => (
