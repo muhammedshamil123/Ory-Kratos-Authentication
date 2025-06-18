@@ -142,7 +142,9 @@ func GetIdentities(c *gin.Context) {
 
 func CreateRepoHandler(c *gin.Context) {
 	var body struct {
-		Name string `json:"name"`
+		Name        string `json:"name"`
+		Description string `json:"description"`
+		Private     bool   `json:"private"`
 	}
 
 	if err := c.BindJSON(&body); err != nil {
@@ -161,8 +163,9 @@ func CreateRepoHandler(c *gin.Context) {
 	))
 
 	repo := &github.Repository{
-		Name:    github.String(body.Name),
-		Private: github.Bool(false),
+		Name:        github.String(body.Name),
+		Description: github.String(body.Description),
+		Private:     github.Bool(body.Private),
 	}
 
 	createdRepo, _, err := github.NewClient(client).Repositories.Create(context.Background(), "", repo)
