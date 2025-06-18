@@ -1,6 +1,7 @@
   import React, { useState, useEffect } from 'react';
   import { useNavigate } from 'react-router-dom';
   import Swal from 'sweetalert2';
+  import CreateRepoModal from './CreateRepoModal';
 
 
   const KRATOS_PUBLIC_URL = 'http://localhost:4433';
@@ -10,6 +11,7 @@
 
     const [repos, setRepos] = useState([]);
     const [currentPage, setCurrentPage] = useState(1);
+    const [isModalOpen, setIsModalOpen] = useState(false);
     const reposPerPage = 6;
 
     const navigate = useNavigate();
@@ -81,47 +83,33 @@
     };
     const handleLogin = () => window.location.href = "http://localhost:8080/login/github";
     const handleProtected = () => navigate("/protected");
-    const handleCreateRepo = async () => {
-      const { value: repoName } = await Swal.fire({
-        title: 'Create New Repository',
-        input: 'text',
-        inputLabel: 'Repository Name',
-        inputPlaceholder: 'Enter a name for your new GitHub repository',
-        confirmButtonColor: '#10b981',
-        background: '#1f2937',
-        color: '#f3f4f6',
-        showCancelButton: true,
-        inputValidator: (value) => {
-          if (!value) {
-            return 'Repository name cannot be empty';
-          }
-        }
-      });
 
-      if (!repoName) return;
+    const handleRepoCreate = async ({ name, description, private: isPrivate }) => {
       try {
-      const res = await fetch("http://localhost:8080/github/create-repo", {
-        method: "POST",
-        credentials: "include",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({ name: repoName })
-      });
+        const res = await fetch("http://localhost:8080/github/repos", {
+          method: "POST",
+          credentials: "include",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({ name, description, private: isPrivate })
+        });
 
-      const data = await res.json();
+        const data = await res.json();
 
-      if (res.ok) {
-        Swal.fire("Success!", `Repository '${repoName}' created.`, "success");
-        setRepos(prev => [data, ...prev]);
-      } else {
-        throw new Error(data.message || "Failed to create repository.");
+        if (res.ok) {
+          Swal.fire("Success!", `Repository '${name}' created.`, "success");
+          setRepos((prev) => [data, ...prev]);
+        } else {
+          throw new Error(data.message || "Failed to create repository.");
+        }
+      } catch (err) {
+        console.error("Repo creation failed:", err);
+        Swal.fire("Error", err.message, "error");
       }
-    } catch (err) {
-      console.error("Repo creation failed:", err);
-      Swal.fire("Error", err.message, "error");
-    }
     };
+
+
 
     if (!user) {
       return (
@@ -180,7 +168,7 @@
             )}
             {repos.length > 0 && (
               <button
-                onClick={handleCreateRepo}
+                onClick={() => setIsModalOpen(true)}
                 className="bg-green-600 hover:bg-green-500 px-4 py-2 rounded text-sm font-medium transition"
               >
                 Create GitHub Repo
@@ -242,6 +230,11 @@
               )}
             </div>
           )}
+          <CreateRepoModal
+            isOpen={isModalOpen}
+            onClose={() => setIsModalOpen(false)}
+            onCreate={handleRepoCreate}
+          />
         </main>
       </div>
     );

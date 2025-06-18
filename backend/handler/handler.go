@@ -141,7 +141,6 @@ func GetIdentities(c *gin.Context) {
 }
 
 func CreateRepoHandler(c *gin.Context) {
-	fmt.Println("hello")
 	var body struct {
 		Name string `json:"name"`
 	}
