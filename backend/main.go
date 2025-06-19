@@ -4,7 +4,6 @@ import (
 	"backend/handler"
 	"backend/middleware"
 	"log"
-
 	"time"
 
 	"github.com/gin-contrib/cors"
@@ -28,17 +27,20 @@ func main() {
 		log.Fatalf("Casbin init failed: %v", err)
 	}
 
-	router.GET("/home", middleware.AuthorizationMiddleware(enforcer), handler.HomePage)
 	router.POST("/logout", handler.Logout)
-
-	router.GET("/login/github", middleware.AuthorizationMiddleware(enforcer), handler.GitHubLogin)
-	router.GET("/github/callback", middleware.AuthorizationMiddleware(enforcer), handler.GitHubCallback)
-	router.GET("/github/repos", middleware.AuthorizationMiddleware(enforcer), handler.GitHubRepos)
-	router.POST("/github/repos", middleware.AuthorizationMiddleware(enforcer), handler.CreateRepoHandler)
-
 	router.POST("/api/register", handler.RegisterHandler(enforcer))
-	router.GET("/protected", middleware.AuthorizationMiddleware(enforcer), handler.HomePage)
-	router.GET("/api/admin/identities", middleware.AuthorizationMiddleware(enforcer), handler.GetIdentities)
+
+	authGroup := router.Group("/")
+	authGroup.Use(middleware.AuthorizationMiddleware(enforcer))
+	{
+		authGroup.GET("/home", handler.HomePage)
+		authGroup.GET("/login/github", handler.GitHubLogin)
+		authGroup.GET("/github/callback", handler.GitHubCallback)
+		authGroup.GET("/github/repos", handler.GitHubRepos)
+		authGroup.POST("/github/repos", handler.CreateRepoHandler)
+		authGroup.GET("/protected", handler.HomePage)
+		authGroup.GET("/api/admin/identities", handler.GetIdentities)
+	}
 
 	router.Run(":8080")
 }

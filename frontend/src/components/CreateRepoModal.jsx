@@ -1,9 +1,26 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 
 function CreateRepoModal({ isOpen, onClose, onCreate }) {
+  const [show, setShow] = useState(false);
+  const [closing, setClosing] = useState(false);
+
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [visibility, setVisibility] = useState("public");
+
+  useEffect(() => {
+    if (isOpen) {
+      setShow(true);
+    } else if (show) {
+      setClosing(true);
+      const timer = setTimeout(() => {
+        setShow(false);
+        setClosing(false);
+      }, 300); // match CSS duration
+
+      return () => clearTimeout(timer);
+    }
+  }, [isOpen]);
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -18,12 +35,18 @@ function CreateRepoModal({ isOpen, onClose, onCreate }) {
     onClose();
   };
 
-  if (!isOpen) return null;
+  if (!show) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-opacity-50 backdrop-blur-sm">
-      <div className="bg-[#2b2b3c] rounded-xl shadow-2xl w-full max-w-md p-6 animate-fadeIn transform scale-95 transition-all duration-300">
-        <h2 className="text-xl font-semibold text-gray-100 mb-4 text-center">Create New Repository</h2>
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-opacity-50 backdrop-blur-sm bg-black/40">
+      <div
+        className={`bg-[#2b2b3c] rounded-xl shadow-2xl w-full max-w-md p-6 transform transition-all duration-300 ${
+          closing ? "animate-fadeOut" : "animate-fadeIn"
+        }`}
+      >
+        <h2 className="text-xl font-semibold text-gray-100 mb-4 text-center">
+          Create New Repository
+        </h2>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label className="text-gray-300 block mb-1">Repository Name</label>
