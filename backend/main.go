@@ -39,7 +39,8 @@ func main() {
 		authGroup.GET("/github/repos", handler.GitHubRepos)
 		authGroup.POST("/github/repos", handler.CreateRepoHandler)
 		authGroup.GET("/protected", handler.HomePage)
-		authGroup.GET("/api/admin/identities", handler.GetIdentities)
+		authGroup.GET("/api/admin/identities", handler.GetIdentities(enforcer))
+		authGroup.POST("/api/admin/update-role", handler.UpdateUserRole(enforcer))
 	}
 
 	router.Run(":8080")

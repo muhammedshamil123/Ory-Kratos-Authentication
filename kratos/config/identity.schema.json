@@ -23,14 +23,9 @@
           "type": "string",
           "minLength": 1,
           "title": "Full Name"
-        },
-        "role": {
-          "type": "string",
-          "enum": ["admin", "user"],
-          "title": "User Role"
         }
       },
-      "required": ["email", "name", "role"],
+      "required": ["email", "name"],
       "additionalProperties": false
     }
   },

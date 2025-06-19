@@ -73,7 +73,6 @@ function Signup() {
           traits: {
             email: email,
             name: name,
-            role: 'user',
           },
           password: password,
         },

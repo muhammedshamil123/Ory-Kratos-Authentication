@@ -90,7 +90,7 @@ func extractUserID(body []byte) (string, error) {
 
 	id, ok := identity["id"].(string)
 	if !ok {
-		return "", fmt.Errorf("missing or invalid 'identity.id'")
+		return "", fmt.Errorf("missing or invalid id")
 	}
 
 	return id, nil
