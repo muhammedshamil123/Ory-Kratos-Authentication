@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"log"
 	"net/http"
 
 	"github.com/casbin/casbin/v2"
@@ -114,4 +115,37 @@ func assignDefaultRole(e *casbin.Enforcer, userID string) error {
 	_ = e.SavePolicy()
 
 	return nil
+}
+
+func OIDCLoginRedirectHandler(c *gin.Context) {
+	provider := "google"
+
+	// Step 1: Create login flow
+	kratosLoginFlowURL := "http://localhost:4433/self-service/login/browser"
+
+	// Forward cookies to maintain session
+	client := &http.Client{}
+	req, _ := http.NewRequest("GET", kratosLoginFlowURL, nil)
+	for _, cookie := range c.Request.Cookies() {
+		req.AddCookie(cookie)
+	}
+	resp, err := client.Do(req)
+	if err != nil || resp.StatusCode != http.StatusOK {
+		c.String(http.StatusInternalServerError, "Failed to start login flow")
+		return
+	}
+	defer resp.Body.Close()
+
+	// Parse redirect URL to get flow ID
+	redirectURL := resp.Request.URL
+	flowID := redirectURL.Query().Get("flow")
+
+	// Step 2: Compose correct OIDC redirect
+	oidcURL := fmt.Sprintf(
+		"http://localhost:4433/self-service/login?flow=%s&provider=%s",
+		flowID, provider,
+	)
+
+	log.Println("Redirecting to Kratos OIDC login:", oidcURL)
+	c.Redirect(http.StatusFound, oidcURL)
 }

@@ -11,8 +11,11 @@ secrets:
 
 session:
   cookie:
-    same_site: Lax
+    same_site: Lax  # Change to 'None' if using HTTPS across origins
     domain: localhost
+    path: /
+    persistent: true  # Ensure cookie stays set beyond session
+    # secure: true     # Uncomment this ONLY if you're on HTTPS
 
 serve:
   public:
@@ -50,18 +53,42 @@ selfservice:
   default_browser_return_url: http://localhost:3000/
   allowed_return_urls:
     - http://localhost:3000
+
+  methods:
+    password:
+      enabled: true
+    oidc:
+      enabled: true
+      config:
+        providers:
+          - id: google
+            provider: google
+            client_id: 446655831400-65ob6ge9d7jrf40rrkq33frf954evj68.apps.googleusercontent.com
+            client_secret: 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
+            mapper_url: file:///etc/config/kratos/google.jsonnet
+            scope:
+              - openid
+              - profile
+              - email
+
   flows:
     login:
       ui_url: http://localhost:3000/login
+      after:
+        oidc:
+          default_browser_return_url: http://localhost:3000/  
     registration:
       ui_url: http://localhost:3000/register
       after:
         password:
           default_browser_return_url: http://localhost:3000/
+        oidc:
+          default_browser_return_url: http://localhost:3000/
     logout:
       after:
         default_browser_return_url: http://localhost:3000/
-
+    error:
+      ui_url: http://localhost:3000/error
 
 hashers:
   argon2:

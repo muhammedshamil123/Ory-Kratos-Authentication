@@ -29,6 +29,7 @@ func main() {
 
 	router.POST("/logout", handler.Logout)
 	router.POST("/api/register", handler.RegisterHandler(enforcer))
+	router.GET("/auth/oidc/google", handler.OIDCLoginRedirectHandler)
 
 	authGroup := router.Group("/")
 	authGroup.Use(middleware.AuthorizationMiddleware(enforcer))

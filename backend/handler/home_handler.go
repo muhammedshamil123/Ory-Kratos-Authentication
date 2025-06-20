@@ -55,6 +55,7 @@ func Logout(c *gin.Context) {
 	}
 
 	c.SetCookie("github_token", "", -1, "/", "localhost", false, true)
+	c.SetCookie("ory_kratos_continuity", "", -1, "/", "localhost", false, true)
 
 	c.JSON(http.StatusOK, gin.H{"logout_url": resData.LogoutURL})
 }

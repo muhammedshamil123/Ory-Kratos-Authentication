@@ -106,6 +106,9 @@ function Signup() {
         }
       });
   };
+  const handleGoogleLogin = () => {
+  window.location.href = 'http://localhost:8080/auth/oidc/google'; // Your Go backend endpoint
+  };
 
   return (
     <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: COLORS.secondary }}>
@@ -121,6 +124,7 @@ function Signup() {
 
         {/* Google Sign-In Button */}
         <button
+        onClick={handleGoogleLogin}
           className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-lg border mb-4 transition-all hover:shadow-sm"
           style={{ 
             borderColor: COLORS.border,
