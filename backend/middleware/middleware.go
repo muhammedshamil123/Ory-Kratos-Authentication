@@ -89,12 +89,21 @@ func AuthorizationMiddleware(e *casbin.Enforcer) gin.HandlerFunc {
 			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": "Internal error"})
 			return
 		}
-		fmt.Println(user, obj, act)
 		if !ok {
 			c.AbortWithStatusJSON(http.StatusForbidden, gin.H{"error": "Access denied"})
 			return
 		}
+		roles, err := e.GetRolesForUser(user)
+		if err != nil {
+			fmt.Printf("Failed to get roles for user %s: %v\n", user, err)
+			return
+		}
+		role := ""
+		if len(roles) > 0 {
+			role = roles[0]
+		}
 		c.Set("user", session.Identity)
+		c.Set("role", role)
 		c.Next()
 	}
 }

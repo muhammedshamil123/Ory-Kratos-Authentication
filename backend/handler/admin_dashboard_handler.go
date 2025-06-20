@@ -42,7 +42,7 @@ func GetIdentities(enforcer *casbin.Enforcer) gin.HandlerFunc {
 			if len(roles) == 0 {
 				val["role"] = []string{"none"}
 			} else {
-				val["role"] = roles
+				val["role"] = roles[0]
 			}
 		}
 

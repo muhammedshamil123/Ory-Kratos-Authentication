@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 
-function CreateRepoModal({ isOpen, onClose, onCreate }) {
+function CreateRepoModal({ isOpen, onClose, onCreate, colors }) {
   const [show, setShow] = useState(false);
   const [closing, setClosing] = useState(false);
 
@@ -20,7 +20,7 @@ function CreateRepoModal({ isOpen, onClose, onCreate }) {
 
       return () => clearTimeout(timer);
     }
-  }, [isOpen]);
+  }, [isOpen, show]);
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -38,47 +38,87 @@ function CreateRepoModal({ isOpen, onClose, onCreate }) {
   if (!show) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-opacity-50 backdrop-blur-sm bg-black/40">
+    <div 
+      className="fixed inset-0 z-50 flex items-center justify-center bg-opacity-50 backdrop-blur-sm"
+      style={{ backgroundColor: `${colors.primary}80` }}
+    >
       <div
-        className={`bg-[#2b2b3c] rounded-xl shadow-2xl w-full max-w-md p-6 transform transition-all duration-300 ${
+        className={`rounded-xl shadow-2xl w-full max-w-md p-6 transform transition-all duration-300 ${
           closing ? "animate-fadeOut" : "animate-fadeIn"
         }`}
+        style={{ 
+          backgroundColor: colors.secondary,
+          border: `1px solid ${colors.border}`
+        }}
       >
-        <h2 className="text-xl font-semibold text-gray-100 mb-4 text-center">
-          Create New Repository
-        </h2>
+        <div className="flex justify-between items-center mb-4">
+          <h2 className="text-xl font-semibold" style={{ color: colors.text }}>
+            Create New Repository
+          </h2>
+          <button
+            onClick={onClose}
+            className="p-1 rounded-full hover:bg-opacity-20 hover:bg-gray-400"
+            style={{ color: colors.muted }}
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+              <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
+            </svg>
+          </button>
+        </div>
+        
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="text-gray-300 block mb-1">Repository Name</label>
+            <label className="block mb-1 text-sm font-medium" style={{ color: colors.muted }}>
+              Repository Name
+            </label>
             <input
               required
               type="text"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              className="w-full p-2 rounded bg-gray-800 text-white border border-gray-600 focus:outline-none focus:ring focus:ring-green-600"
+              className="w-full p-2 rounded text-sm focus:outline-none focus:ring-2"
+              style={{ 
+                backgroundColor: colors.primary,
+                border: `1px solid ${colors.border}`,
+                color: colors.text,
+                focusRing: colors.accent
+              }}
             />
           </div>
+          
           <div>
-            <label className="text-gray-300 block mb-1">Description</label>
+            <label className="block mb-1 text-sm font-medium" style={{ color: colors.muted }}>
+              Description
+            </label>
             <textarea
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              className="w-full p-2 rounded bg-gray-800 text-white border border-gray-600 focus:outline-none focus:ring focus:ring-green-600"
+              className="w-full p-2 rounded text-sm focus:outline-none focus:ring-2"
+              style={{ 
+                backgroundColor: colors.primary,
+                border: `1px solid ${colors.border}`,
+                color: colors.text,
+                focusRing: colors.accent
+              }}
               rows="3"
             ></textarea>
           </div>
+          
           <div>
-            <label className="text-gray-300 block mb-1">Visibility</label>
-            <div className="flex gap-6 text-gray-200">
+            <label className="block mb-1 text-sm font-medium" style={{ color: colors.muted }}>
+              Visibility
+            </label>
+            <div className="flex gap-6">
               <label className="inline-flex items-center">
                 <input
                   type="radio"
                   value="public"
                   checked={visibility === "public"}
                   onChange={() => setVisibility("public")}
-                  className="mr-2 accent-green-500"
+                  className="mr-2"
+                  style={{ accentColor: colors.accent }}
                 />
-                Public
+                <span style={{ color: colors.text }}>Public</span>
               </label>
               <label className="inline-flex items-center">
                 <input
@@ -86,25 +126,38 @@ function CreateRepoModal({ isOpen, onClose, onCreate }) {
                   value="private"
                   checked={visibility === "private"}
                   onChange={() => setVisibility("private")}
-                  className="mr-2 accent-green-500"
+                  className="mr-2"
+                  style={{ accentColor: colors.accent }}
                 />
-                Private
+                <span style={{ color: colors.text }}>Private</span>
               </label>
             </div>
           </div>
-          <div className="flex justify-end gap-2 mt-4">
+          
+          <div className="flex justify-end gap-3 pt-4">
             <button
               type="button"
               onClick={onClose}
-              className="bg-gray-600 hover:bg-gray-500 text-white px-4 py-2 rounded"
+              className="px-4 py-2 rounded text-sm font-medium transition-colors"
+              style={{ 
+                backgroundColor: colors.primary,
+                color: colors.text,
+                border: `1px solid ${colors.border}`,
+                hoverBackground: `${colors.border}80`
+              }}
             >
               Cancel
             </button>
             <button
               type="submit"
-              className="bg-green-600 hover:bg-green-500 text-white px-4 py-2 rounded"
+              className="px-4 py-2 rounded text-sm font-medium transition-colors"
+              style={{ 
+                backgroundColor: colors.success,
+                color: 'white',
+                hoverBackground: `${colors.success}dd`
+              }}
             >
-              Create
+              Create Repository
             </button>
           </div>
         </form>
