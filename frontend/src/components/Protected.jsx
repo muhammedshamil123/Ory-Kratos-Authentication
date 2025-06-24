@@ -35,36 +35,6 @@ const Protected = () => {
     });
   };
 
-  const handleLogout = async () => {
-      const result = await Swal.fire({
-        title: 'Logout Confirmation',
-        text: "Are you sure you want to logout?",
-        icon: 'question',
-        background: COLORS.primary,
-        color: COLORS.text,
-        showCancelButton: true,
-        confirmButtonColor: COLORS.accent,
-        cancelButtonColor: COLORS.danger,
-        confirmButtonText: 'Yes, logout',
-        cancelButtonText: 'Cancel'
-      });
-      
-      if (result.isConfirmed) {
-        try {
-          const res = await fetch("http://localhost:8080/logout", {
-            method: "POST",
-            credentials: "include",
-          });
-          const data = await res.json();
-          if (data.logout_url) {
-            window.location.href = data.logout_url;
-          }
-        } catch (err) {
-          console.error('Logout failed:', err);
-        }
-      }
-    };
-
   const fetchWithAuth = async (endpoint, options = {}) => {
     try {
       const res = await fetch(`${API_BASE_URL}${endpoint}`, {
@@ -190,7 +160,7 @@ const Protected = () => {
       }}
     >
       {/* Light-themed Navbar */}
-      <nav 
+      {/* <nav 
         className="px-6 py-4 shadow-sm sticky top-0 z-50" 
         style={{ 
           backgroundColor: COLORS.primary,
@@ -233,7 +203,7 @@ const Protected = () => {
             </button>
           </div>
         </div>
-      </nav>
+      </nav> */}
 
       <main className="max-w-7xl mx-auto px-4 py-8 sm:px-6 lg:px-8">
         <div className="mb-12 text-center">

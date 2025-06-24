@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import Swal from 'sweetalert2';
 import CreateRepoModal from './CreateRepoModal';
 
 const Home = () => {
@@ -10,12 +9,12 @@ const Home = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [showSidebar, setShowSidebar] = useState(false);
   const reposPerPage = 6;
   const navigate = useNavigate();
 
-  // Unified color theme matching admin dashboard
   const COLORS = {
-     primary: '#ffffff',
+    primary: '#ffffff',
     secondary: '#f8fafc',
     accent: '#3b82f6',
     danger: '#ef4444',
@@ -24,7 +23,6 @@ const Home = () => {
     muted: '#64748b',
     border: '#e2e8f0',
     highlight: '#4cc9f020'
-    
   };
 
   useEffect(() => {
@@ -42,7 +40,7 @@ const Home = () => {
         ]);
 
         if (!userRes.ok) throw new Error('Unauthorized');
-        
+
         const userData = await userRes.json();
         setUser(userData.user.traits);
         setRole(userData.role);
@@ -62,73 +60,44 @@ const Home = () => {
     fetchData();
   }, [navigate]);
 
-  const handleLogout = async () => {
-    const result = await Swal.fire({
-      title: 'Logout Confirmation',
-      text: "Are you sure you want to logout?",
-      icon: 'question',
-      background: COLORS.primary,
-      color: COLORS.text,
-      showCancelButton: true,
-      confirmButtonColor: COLORS.accent,
-      cancelButtonColor: COLORS.danger,
-      confirmButtonText: 'Yes, logout',
-      cancelButtonText: 'Cancel'
-    });
-    
-    if (result.isConfirmed) {
+  
+  const handleRepoCreate = async ({ name, description, private: isPrivate }) => {
       try {
-        const res = await fetch("http://localhost:8080/logout", {
+        const res = await fetch("http://localhost:8080/github/repos", {
           method: "POST",
           credentials: "include",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({ name, description, private: isPrivate })
         });
+  
         const data = await res.json();
-        if (data.logout_url) {
-          window.location.href = data.logout_url;
+  
+        if (res.ok) {
+          await Swal.fire({
+            title: "Success!",
+            text: `Repository ${name} created successfully.`,
+            icon: "success",
+            background: COLORS.primary,
+            color: COLORS.text,
+            confirmButtonColor: COLORS.success
+          });
+          setRepos(prev => [data, ...prev]);
+        } else {
+          throw new Error(data.message || "Failed to create repository.");
         }
       } catch (err) {
-        console.error('Logout failed:', err);
-      }
-    }
-  };
-
-  const handleRepoCreate = async ({ name, description, private: isPrivate }) => {
-    try {
-      const res = await fetch("http://localhost:8080/github/repos", {
-        method: "POST",
-        credentials: "include",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({ name, description, private: isPrivate })
-      });
-
-      const data = await res.json();
-
-      if (res.ok) {
         await Swal.fire({
-          title: "Success!",
-          text: `Repository ${name} created successfully.`,
-          icon: "success",
+          title: "Error",
+          text: err.message,
+          icon: "error",
           background: COLORS.primary,
           color: COLORS.text,
-          confirmButtonColor: COLORS.success
+          confirmButtonColor: COLORS.danger
         });
-        setRepos(prev => [data, ...prev]);
-      } else {
-        throw new Error(data.message || "Failed to create repository.");
       }
-    } catch (err) {
-      await Swal.fire({
-        title: "Error",
-        text: err.message,
-        icon: "error",
-        background: COLORS.primary,
-        color: COLORS.text,
-        confirmButtonColor: COLORS.danger
-      });
-    }
-  };
+    };
 
   if (isLoading) {
     return (
@@ -140,8 +109,9 @@ const Home = () => {
       </div>
     );
   }
+  
 
-  // Pagination calculations
+
   const indexOfLastRepo = currentPage * reposPerPage;
   const indexOfFirstRepo = indexOfLastRepo - reposPerPage;
   const currentRepos = repos.slice(indexOfFirstRepo, indexOfLastRepo);
@@ -149,26 +119,48 @@ const Home = () => {
 
   const paginate = (pageNumber) => setCurrentPage(pageNumber);
 
+  const toggleSidebar = () => setShowSidebar(!showSidebar);
+
   return (
     <div className="min-h-screen" style={{ backgroundColor: COLORS.primary }}>
-      {/* Unified Navbar */}
-      <nav className="px-8 py-5 shadow-lg sticky top-0 z-50" style={{ 
+      {/* Sidebar
+      <div className={`fixed top-0 left-0 h-full w-64 bg-white shadow-md z-50 transition-transform transform ${showSidebar ? 'translate-x-0' : '-translate-x-full'}`}>
+        <div className="p-6">
+          <h2 className="text-xl font-bold mb-6" style={{ color: COLORS.accent }}>Menu</h2>
+          <button
+            onClick={() => navigate("/protected")}
+            className="w-full text-left px-4 py-2 mb-2 rounded-md hover:bg-gray-200"
+          >
+            Admin Dashboard
+          </button>
+          
+          <button
+            onClick={toggleSidebar}
+            className="w-full text-left px-4 py-2 mt-4 rounded-md bg-gray-100 hover:bg-gray-200"
+          >
+            Close Sidebar
+          </button>
+        </div>
+      </div>
+
+      Navbar
+      <nav className="px-8 py-5 shadow-lg sticky top-0 z-40" style={{ 
         backgroundColor: COLORS.secondary,
         borderBottom: `1px solid ${COLORS.border}`
       }}>
         <div className="max-w-7xl mx-auto flex justify-between items-center">
           <div className="flex items-center space-x-4">
             <button
-              onClick={() => navigate('/')}
+              onClick={toggleSidebar}
               className="flex items-center space-x-2 hover:opacity-80 transition-opacity"
               style={{ color: COLORS.text }}
             >
               <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
               </svg>
-              <span className="font-medium">Home</span>
+              <span className="font-medium">Menu</span>
             </button>
-            
+
             <h1 className="text-2xl font-bold tracking-tight">
               <span style={{ color: COLORS.accent }}>GitHub</span> Dashboard
             </h1>
@@ -178,99 +170,60 @@ const Home = () => {
             <span className="hidden md:inline text-sm" style={{ color: COLORS.muted }}>
               Logged in as <span style={{ color: COLORS.text }}>{user?.name}</span>
             </span>
-            
-            <button
-              onClick={handleLogout}
-              className="flex items-center space-x-2 px-4 py-2 rounded-lg transition-colors"
-              style={{ 
-                backgroundColor: COLORS.danger,
-                color: 'white'
-              }}
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-              </svg>
-              <span className="font-medium">Logout</span>
-            </button>
           </div>
         </div>
-      </nav>
+      </nav> */}
 
-      {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 py-8 sm:px-6 lg:px-8">
-        {/* Welcome Section */}
-        <section className="text-center mb-12">
+         <section className="text-center mb-12">
           <h2 className="text-3xl md:text-4xl font-bold mb-3" style={{ color: COLORS.text }}>
             Welcome, <span style={{ color: COLORS.accent }}>{user?.name}</span>
           </h2>
           <p className="text-lg" style={{ color: COLORS.muted }}>
-            {repos.length > 0 
-              ? `You have ${repos.length} repositories` 
-              : 'Connect your GitHub account to get started'}
+            {repos.length > 0 ?  `You have ${repos.length} repositories` :'Connect your GitHub account to get started'}
           </p>
-        </section>
+         </section>
+         <div className="flex flex-wrap justify-center gap-4 mb-12">
+            {repos.length === 0 && (
+              <button
+                onClick={() => window.location.href = "http://localhost:8080/login/github"}
+                className="flex items-center space-x-2 px-6 py-3 rounded-xl transition-all hover:opacity-90"
+                style={{ 
+                  backgroundColor: '#24292e',
+                  color: 'white'
+                }}
+              >
+                <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M12 0C5.37 0 0 5.37 0 12c0 5.3 3.438 9.8 8.205 11.385.6.113.82-.26.82-.577v-2.234c-3.338.725-4.033-1.61-4.033-1.61-.546-1.385-1.333-1.754-1.333-1.754-1.089-.745.083-.73.083-.73 1.205.084 1.84 1.238 1.84 1.238 1.07 1.834 2.809 1.304 3.495.997.108-.775.418-1.305.762-1.605-2.665-.303-5.467-1.334-5.467-5.93 0-1.31.47-2.38 1.236-3.22-.124-.303-.535-1.523.117-3.176 0 0 1.008-.322 3.3 1.23.96-.267 1.98-.4 3-.404 1.02.004 2.04.137 3 .404 2.29-1.552 3.296-1.23 3.296-1.23.653 1.653.242 2.873.12 3.176.77.84 1.236 1.91 1.236 3.22 0 4.61-2.807 5.624-5.48 5.92.43.37.823 1.103.823 2.222v3.293c0 .32.216.694.825.576C20.565 21.796 24 17.297 24 12c0-6.63-5.373-12-12-12z" />
+                </svg>
+                <span>Connect GitHub</span>
+              </button>
+            )}
 
-        {/* Action Buttons */}
-        <div className="flex flex-wrap justify-center gap-4 mb-12">
-          <button
-            onClick={() => navigate("/protected")}
-            className="flex items-center space-x-2 px-6 py-3 rounded-xl transition-all hover:opacity-90"
-            style={{ 
-              backgroundColor: COLORS.secondary,
-              color: COLORS.text,
-              border: `1px solid ${COLORS.border}`
-            }}
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-            </svg>
-            <span>Admin Dashboard</span>
-          </button>
-
-          {repos.length === 0 && (
-            <button
-              onClick={() => window.location.href = "http://localhost:8080/login/github"}
-              className="flex items-center space-x-2 px-6 py-3 rounded-xl transition-all hover:opacity-90"
-              style={{ 
-                backgroundColor: '#24292e',
-                color: 'white'
-              }}
-            >
-              <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M12 0C5.37 0 0 5.37 0 12c0 5.3 3.438 9.8 8.205 11.385.6.113.82-.26.82-.577v-2.234c-3.338.725-4.033-1.61-4.033-1.61-.546-1.385-1.333-1.754-1.333-1.754-1.089-.745.083-.73.083-.73 1.205.084 1.84 1.238 1.84 1.238 1.07 1.834 2.809 1.304 3.495.997.108-.775.418-1.305.762-1.605-2.665-.303-5.467-1.334-5.467-5.93 0-1.31.47-2.38 1.236-3.22-.124-.303-.535-1.523.117-3.176 0 0 1.008-.322 3.3 1.23.96-.267 1.98-.4 3-.404 1.02.004 2.04.137 3 .404 2.29-1.552 3.296-1.23 3.296-1.23.653 1.653.242 2.873.12 3.176.77.84 1.236 1.91 1.236 3.22 0 4.61-2.807 5.624-5.48 5.92.43.37.823 1.103.823 2.222v3.293c0 .32.216.694.825.576C20.565 21.796 24 17.297 24 12c0-6.63-5.373-12-12-12z" />
-              </svg>
-              <span>Connect GitHub</span>
-            </button>
-          )}
-
-          {repos.length > 0 && role !== "reader" && (
-            <button
-              onClick={() => setIsModalOpen(true)}
-              className="flex items-center space-x-2 px-6 py-3 rounded-xl transition-all hover:opacity-90"
-              style={{ 
-                backgroundColor: COLORS.success,
-                color: 'white'
-              }}
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-              </svg>
-              <span>New Repository</span>
-            </button>
-          )}
-        </div>
-
-        {/* Repositories Grid */}
-        {repos.length > 0 && (
-          <section className="mb-12">
-            <h2 className="text-2xl font-bold mb-6 text-center" style={{ color: COLORS.text }}>
-              Your GitHub Repositories
-            </h2>
-            
-            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-              {currentRepos.map((repo) => (
-                <div
+            {repos.length > 0 && role !== "reader" && (
+              <button
+                onClick={() => setIsModalOpen(true)}
+                className="flex items-center space-x-2 px-6 py-3 rounded-xl transition-all hover:opacity-90"
+                style={{ 
+                  backgroundColor: COLORS.success,
+                  color: 'white'
+                }}
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                </svg>
+                <span>New Repository</span>
+              </button>
+            )}
+          </div>
+          {repos.length > 0 && (
+            <section className="mb-12">
+              <h2 className="text-2xl font-bold mb-6 text-center" style={{ color: COLORS.text }}>
+                Your GitHub Repositories
+              </h2>
+              <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+                  {currentRepos.map((repo) => (
+                    <div
                   key={repo.id}
                   className="group p-6 rounded-xl transition-all duration-300 hover:-translate-y-1 hover:shadow-lg"
                   style={{ 
@@ -319,11 +272,9 @@ const Home = () => {
                     <span>{repo.language || 'Code'}</span>
                   </div>
                 </div>
-              ))}
-            </div>
-
-            {/* Pagination */}
-            {repos.length > reposPerPage && (
+                  ))}
+              </div>
+              {repos.length > reposPerPage && (
               <div className="flex justify-center mt-8">
                 <nav className="flex items-center space-x-2">
                   <button
@@ -399,11 +350,9 @@ const Home = () => {
                 </nav>
               </div>
             )}
-          </section>
-        )}
+            </section>
+          )}
       </main>
-
-      {/* Create Repo Modal */}
       <CreateRepoModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}

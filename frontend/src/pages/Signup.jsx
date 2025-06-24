@@ -107,7 +107,7 @@ function Signup() {
       });
   };
   const handleGoogleLogin = () => {
-  window.location.href = 'http://localhost:8080/auth/oidc/google'; // Your Go backend endpoint
+  window.location.href = 'http://localhost:8080/auth/oidc/google'; 
   };
 
   return (
