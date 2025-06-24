@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Swal from 'sweetalert2';
+import COLORS from '../constants/Colors';
 
 const API_BASE_URL = 'http://localhost:8080';
 
@@ -10,18 +11,6 @@ const Protected = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
   const navigate = useNavigate();
-
-  // Light theme colors
-  const COLORS = {
-    primary: '#ffffff',
-    secondary: '#f8fafc',
-    accent: '#3b82f6',
-    danger: '#ef4444',
-    success: '#10b981',
-    text: '#1e293b',
-    muted: '#64748b',
-    border: '#e2e8f0'
-  };
 
   const showErrorAlert = (message = 'An unexpected error occurred') => {
     return Swal.fire({

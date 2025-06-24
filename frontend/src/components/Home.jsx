@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import CreateRepoModal from './CreateRepoModal';
+import COLORS from '../constants/Colors';
 
 const Home = () => {
   const [user, setUser] = useState(null);
@@ -9,21 +10,9 @@ const Home = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
-  const [showSidebar, setShowSidebar] = useState(false);
   const reposPerPage = 6;
   const navigate = useNavigate();
 
-  const COLORS = {
-    primary: '#ffffff',
-    secondary: '#f8fafc',
-    accent: '#3b82f6',
-    danger: '#ef4444',
-    success: '#10b981',
-    text: '#1e293b',
-    muted: '#64748b',
-    border: '#e2e8f0',
-    highlight: '#4cc9f020'
-  };
 
   useEffect(() => {
     const fetchData = async () => {
@@ -119,60 +108,8 @@ const Home = () => {
 
   const paginate = (pageNumber) => setCurrentPage(pageNumber);
 
-  const toggleSidebar = () => setShowSidebar(!showSidebar);
-
   return (
     <div className="min-h-screen" style={{ backgroundColor: COLORS.primary }}>
-      {/* Sidebar
-      <div className={`fixed top-0 left-0 h-full w-64 bg-white shadow-md z-50 transition-transform transform ${showSidebar ? 'translate-x-0' : '-translate-x-full'}`}>
-        <div className="p-6">
-          <h2 className="text-xl font-bold mb-6" style={{ color: COLORS.accent }}>Menu</h2>
-          <button
-            onClick={() => navigate("/protected")}
-            className="w-full text-left px-4 py-2 mb-2 rounded-md hover:bg-gray-200"
-          >
-            Admin Dashboard
-          </button>
-          
-          <button
-            onClick={toggleSidebar}
-            className="w-full text-left px-4 py-2 mt-4 rounded-md bg-gray-100 hover:bg-gray-200"
-          >
-            Close Sidebar
-          </button>
-        </div>
-      </div>
-
-      Navbar
-      <nav className="px-8 py-5 shadow-lg sticky top-0 z-40" style={{ 
-        backgroundColor: COLORS.secondary,
-        borderBottom: `1px solid ${COLORS.border}`
-      }}>
-        <div className="max-w-7xl mx-auto flex justify-between items-center">
-          <div className="flex items-center space-x-4">
-            <button
-              onClick={toggleSidebar}
-              className="flex items-center space-x-2 hover:opacity-80 transition-opacity"
-              style={{ color: COLORS.text }}
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-              </svg>
-              <span className="font-medium">Menu</span>
-            </button>
-
-            <h1 className="text-2xl font-bold tracking-tight">
-              <span style={{ color: COLORS.accent }}>GitHub</span> Dashboard
-            </h1>
-          </div>
-
-          <div className="flex items-center space-x-6">
-            <span className="hidden md:inline text-sm" style={{ color: COLORS.muted }}>
-              Logged in as <span style={{ color: COLORS.text }}>{user?.name}</span>
-            </span>
-          </div>
-        </div>
-      </nav> */}
 
       <main className="max-w-7xl mx-auto px-4 py-8 sm:px-6 lg:px-8">
          <section className="text-center mb-12">

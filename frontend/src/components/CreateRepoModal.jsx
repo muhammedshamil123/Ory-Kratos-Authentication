@@ -16,7 +16,7 @@ function CreateRepoModal({ isOpen, onClose, onCreate, colors }) {
       const timer = setTimeout(() => {
         setShow(false);
         setClosing(false);
-      }, 300); // match CSS duration
+      }, 300); 
 
       return () => clearTimeout(timer);
     }
