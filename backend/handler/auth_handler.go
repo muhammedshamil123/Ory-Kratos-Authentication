@@ -98,7 +98,8 @@ func extractUserID(body []byte) (string, error) {
 }
 
 func assignDefaultRole(e *casbin.Enforcer, userID string) error {
-	hasRole, err := e.HasGroupingPolicy(userID, "reader")
+	dom := "main"
+	hasRole, err := e.GetRoleManager().HasLink(userID, "reader", dom)
 	if err != nil {
 		return fmt.Errorf("failed to check user role: %w", err)
 	}
@@ -108,7 +109,7 @@ func assignDefaultRole(e *casbin.Enforcer, userID string) error {
 		return nil
 	}
 
-	_, err = e.AddGroupingPolicy(userID, "reader")
+	_, err = e.AddGroupingPolicy(userID, "reader", dom)
 	if err != nil {
 		return fmt.Errorf("failed to assign role: %w", err)
 	}
