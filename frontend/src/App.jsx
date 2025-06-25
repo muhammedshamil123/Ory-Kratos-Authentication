@@ -1,10 +1,13 @@
 import React from "react";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
-import Home from "./components/Home";
+import Home from "./pages/Home";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
-import Protected from "./components/Protected";
+import Protected from "./pages/Protected";
 import Dashboard from "./pages/Dashboard";
+import Organizations from "./pages/Organizations";
+import IAM from "./pages/IAM";
+import OrgDetails from "./pages/OrgDetails";
 
 function App() {
   return (
@@ -16,8 +19,9 @@ function App() {
         <Route path="/" element={<Dashboard />}>
           <Route index element={<Home/>}/>
           <Route path="protected" element={<Protected />} />
-          <Route path="organization" element={<div />} />
-          <Route path="iam" element={<div />} />
+          <Route path="organization" element={<Organizations />} />
+          <Route path="iam" element={<IAM />} />
+          <Route path="orgs/:orgId" element={<OrgDetails/>}/>
           <Route/>
         </Route>
       </Routes>

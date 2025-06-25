@@ -1,6 +1,7 @@
 package main
 
 import (
+	"backend/db"
 	"backend/handler"
 	"backend/middleware"
 	"log"
@@ -11,6 +12,7 @@ import (
 )
 
 func main() {
+	db.ConnectDB("mongodb://localhost:27017")
 	router := gin.Default()
 
 	router.Use(cors.New(cors.Config{
@@ -42,6 +44,9 @@ func main() {
 		authGroup.GET("/protected", handler.HomePage)
 		authGroup.GET("/api/admin/identities", handler.GetIdentities(enforcer))
 		authGroup.POST("/api/admin/update-role", handler.UpdateUserRole(enforcer))
+		authGroup.POST("/orgs/create", handler.CreateOrganizationHandler(enforcer))
+		authGroup.GET("/orgs/get", handler.GetAdminOrgs)
+		authGroup.GET("/orgs/get/:id", handler.GetOrgByIDHandler)
 	}
 
 	router.Run(":8080")

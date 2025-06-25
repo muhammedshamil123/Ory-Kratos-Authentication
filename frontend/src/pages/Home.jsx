@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import CreateRepoModal from './CreateRepoModal';
+import CreateRepoModal from '../components/CreateRepoModal';
 import COLORS from '../constants/Colors';
 import Swal from 'sweetalert2';
 
