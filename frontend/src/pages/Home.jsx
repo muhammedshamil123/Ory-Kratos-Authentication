@@ -1,12 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useOutletContext } from 'react-router-dom';
 import CreateRepoModal from '../components/CreateRepoModal';
 import COLORS from '../constants/Colors';
 import Swal from 'sweetalert2';
 
 const Home = () => {
-  const [user, setUser] = useState(null);
-  const [role, setRole] = useState("");
+  const { user, role } = useOutletContext(); // pulled from Dashboard
   const [repos, setRepos] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -14,80 +13,66 @@ const Home = () => {
   const reposPerPage = 6;
   const navigate = useNavigate();
 
-
   useEffect(() => {
-    const fetchData = async () => {
+    const fetchRepos = async () => {
       try {
         setIsLoading(true);
-        const [userRes, reposRes] = await Promise.all([
-          fetch('http://localhost:8080/home', {
-            method: 'GET',
-            credentials: 'include',
-          }),
-          fetch('http://localhost:8080/github/repos', {
-            credentials: 'include',
-          })
-        ]);
-
-        if (!userRes.ok) throw new Error('Unauthorized');
-
-        const userData = await userRes.json();
-        setUser(userData.user.traits);
-        setRole(userData.role);
+        const reposRes = await fetch('http://localhost:8080/github/repos', {
+          credentials: 'include',
+        });
 
         if (reposRes.ok) {
           const reposData = await reposRes.json();
           setRepos(reposData);
         }
       } catch (err) {
-        console.error('Fetch error:', err);
+        console.error('Error fetching repos:', err);
         navigate('/login');
       } finally {
         setIsLoading(false);
       }
     };
 
-    fetchData();
+    fetchRepos();
   }, [navigate]);
 
-  
   const handleRepoCreate = async ({ name, description, private: isPrivate }) => {
-      try {
-        const res = await fetch("http://localhost:8080/github/repos", {
-          method: "POST",
-          credentials: "include",
-          headers: {
-            "Content-Type": "application/json"
-          },
-          body: JSON.stringify({ name, description, private: isPrivate })
-        });
-  
-        const data = await res.json();
-  
-        if (res.ok) {
-          await Swal.fire({
-            title: "Success!",
-            text: `Repository ${name} created successfully.`,
-            icon: "success",
-            background: COLORS.primary,
-            color: COLORS.text,
-            confirmButtonColor: COLORS.success
-          });
-          setRepos(prev => [data, ...prev]);
-        } else {
-          throw new Error(data.message || "Failed to create repository.");
-        }
-      } catch (err) {
+    try {
+      const res = await fetch("http://localhost:8080/github/repos", {
+        method: "POST",
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ name, description, private: isPrivate })
+      });
+
+      const data = await res.json();
+
+      if (res.ok) {
         await Swal.fire({
-          title: "Error",
-          text: err.message,
-          icon: "error",
+          title: "Success!",
+          text: `Repository ${name} created successfully.`,
+          icon: "success",
           background: COLORS.primary,
           color: COLORS.text,
-          confirmButtonColor: COLORS.danger
+          confirmButtonColor: COLORS.success
         });
+        setRepos(prev => [data, ...prev]);
+      } else {
+        throw new Error(data.message || "Failed to create repository.");
       }
-    };
+    } catch (err) {
+      await Swal.fire({
+        title: "Error",
+        text: err.message,
+        icon: "error",
+        background: COLORS.primary,
+        color: COLORS.text,
+        confirmButtonColor: COLORS.danger
+      });
+    }
+  };
 
   if (isLoading) {
     return (
@@ -99,8 +84,6 @@ const Home = () => {
       </div>
     );
   }
-  
-
 
   const indexOfLastRepo = currentPage * reposPerPage;
   const indexOfFirstRepo = indexOfLastRepo - reposPerPage;
@@ -111,50 +94,46 @@ const Home = () => {
 
   return (
     <div className="min-h-screen" style={{ backgroundColor: COLORS.primary }}>
-
       <main className="max-w-7xl mx-auto px-4 py-8 sm:px-6 lg:px-8">
-         <section className="text-center mb-12">
+        <section className="text-center mb-12">
           <h2 className="text-3xl md:text-4xl font-bold mb-3" style={{ color: COLORS.text }}>
-            Welcome, <span style={{ color: COLORS.accent }}>{user?.name}</span>
+            Welcome, <span style={{ color: COLORS.success }}>{user?.name}</span>
           </h2>
           <p className="text-lg" style={{ color: COLORS.muted }}>
-            {repos.length > 0 ?  `You have ${repos.length} repositories` :'Connect your GitHub account to get started'}
+            {repos.length > 0 ? `You have ${repos.length} repositories` : 'Connect your GitHub account to get started'}
           </p>
-         </section>
-         <div className="flex flex-wrap justify-center gap-4 mb-12">
-            {repos.length === 0 && (
-              <button
-                onClick={() => window.location.href = "http://localhost:8080/login/github"}
-                className="flex items-center space-x-2 px-6 py-3 rounded-xl transition-all hover:opacity-90"
-                style={{ 
-                  backgroundColor: '#24292e',
-                  color: 'white'
-                }}
-              >
-                <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-                  <path d="M12 0C5.37 0 0 5.37 0 12c0 5.3 3.438 9.8 8.205 11.385.6.113.82-.26.82-.577v-2.234c-3.338.725-4.033-1.61-4.033-1.61-.546-1.385-1.333-1.754-1.333-1.754-1.089-.745.083-.73.083-.73 1.205.084 1.84 1.238 1.84 1.238 1.07 1.834 2.809 1.304 3.495.997.108-.775.418-1.305.762-1.605-2.665-.303-5.467-1.334-5.467-5.93 0-1.31.47-2.38 1.236-3.22-.124-.303-.535-1.523.117-3.176 0 0 1.008-.322 3.3 1.23.96-.267 1.98-.4 3-.404 1.02.004 2.04.137 3 .404 2.29-1.552 3.296-1.23 3.296-1.23.653 1.653.242 2.873.12 3.176.77.84 1.236 1.91 1.236 3.22 0 4.61-2.807 5.624-5.48 5.92.43.37.823 1.103.823 2.222v3.293c0 .32.216.694.825.576C20.565 21.796 24 17.297 24 12c0-6.63-5.373-12-12-12z" />
-                </svg>
-                <span>Connect GitHub</span>
-              </button>
-            )}
+        </section>
 
-            {repos.length > 0 && role !== "reader" && (
-              <button
-                onClick={() => setIsModalOpen(true)}
-                className="flex items-center space-x-2 px-6 py-3 rounded-xl transition-all hover:opacity-90"
-                style={{ 
-                  backgroundColor: COLORS.success,
-                  color: 'white'
-                }}
-              >
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                </svg>
-                <span>New Repository</span>
-              </button>
-            )}
-          </div>
-          {repos.length > 0 && (
+        <div className="flex flex-wrap justify-center gap-4 mb-12">
+
+          {repos.length === 0 && (
+            <button
+              onClick={() => window.location.href = "http://localhost:8080/login/github"}
+              className="flex items-center space-x-2 px-6 py-3 rounded-xl transition-all hover:opacity-90"
+              style={{ backgroundColor: '#24292e', color: 'white' }}
+            >
+              <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M12 0C5.37 0 0 5.37 0 12c0 5.3 3.438 9.8 8.205 11.385.6.113.82-.26.82-.577v-2.234c-3.338.725-4.033-1.61-4.033-1.61-.546-1.385-1.333-1.754-1.333-1.754-1.089-.745.083-.73.083-.73 1.205.084 1.84 1.238 1.84 1.238 1.07 1.834 2.809 1.304 3.495.997.108-.775.418-1.305.762-1.605-2.665-.303-5.467-1.334-5.467-5.93 0-1.31.47-2.38 1.236-3.22-.124-.303-.535-1.523.117-3.176 0 0 1.008-.322 3.3 1.23.96-.267 1.98-.4 3-.404 1.02.004 2.04.137 3 .404 2.29-1.552 3.296-1.23 3.296-1.23.653 1.653.242 2.873.12 3.176.77.84 1.236 1.91 1.236 3.22 0 4.61-2.807 5.624-5.48 5.92.43.37.823 1.103.823 2.222v3.293c0 .32.216.694.825.576C20.565 21.796 24 17.297 24 12c0-6.63-5.373-12-12-12z" />
+              </svg>
+              <span>Connect GitHub</span>
+            </button>
+          )}
+
+          {repos.length > 0 && role !== "reader" && (
+            <button
+              onClick={() => setIsModalOpen(true)}
+              className="flex items-center space-x-2 px-6 py-3 rounded-xl transition-all hover:opacity-90"
+              style={{ backgroundColor: COLORS.success, color: 'white' }}
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+              </svg>
+              <span>New Repository</span>
+            </button>
+          )}
+        </div>
+
+        {repos.length > 0 && (
             <section className="mb-12">
               <h2 className="text-2xl font-bold mb-6 text-center" style={{ color: COLORS.text }}>
                 Your GitHub Repositories
@@ -175,7 +154,7 @@ const Home = () => {
                       target="_blank"
                       rel="noreferrer"
                       className="flex items-center space-x-2 group-hover:text-cyan-400 transition-colors"
-                      style={{ color: COLORS.accent }}
+                      style={{ color: COLORS.success }}
                     >
                       <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
                         <path d="M12 0C5.37 0 0 5.37 0 12c0 5.3 3.438 9.8 8.205 11.385.6.113.82-.26.82-.577v-2.234c-3.338.725-4.033-1.61-4.033-1.61-.546-1.385-1.333-1.754-1.333-1.754-1.089-.745.083-.73.083-.73 1.205.084 1.84 1.238 1.84 1.238 1.07 1.834 2.809 1.304 3.495.997.108-.775.418-1.305.762-1.605-2.665-.303-5.467-1.334-5.467-5.93 0-1.31.47-2.38 1.236-3.22-.124-.303-.535-1.523.117-3.176 0 0 1.008-.322 3.3 1.23.96-.267 1.98-.4 3-.404 1.02.004 2.04.137 3 .404 2.29-1.552 3.296-1.23 3.296-1.23.653 1.653.242 2.873.12 3.176.77.84 1.236 1.91 1.236 3.22 0 4.61-2.807 5.624-5.48 5.92.43.37.823 1.103.823 2.222v3.293c0 .32.216.694.825.576C20.565 21.796 24 17.297 24 12c0-6.63-5.373-12-12-12z" />
@@ -291,14 +270,18 @@ const Home = () => {
             </section>
           )}
       </main>
-      <CreateRepoModal
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        onCreate={handleRepoCreate}
-        colors={COLORS}
-      />
+
+        <CreateRepoModal
+          isOpen={isModalOpen}
+          onClose={() => setIsModalOpen(false)}
+          onCreate={handleRepoCreate}
+          colors={COLORS}
+        />
     </div>
   );
 };
 
 export default Home;
+
+
+

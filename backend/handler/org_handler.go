@@ -14,6 +14,13 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
+type InviteRequest struct {
+	OrgID       string `json:"org_id"`
+	OrgName     string `json:"org_name"`
+	Email       string `json:"email"`
+	Description string `json:"description"`
+}
+
 func CreateOrganizationHandler(enforcer *casbin.Enforcer) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var input struct {
@@ -31,6 +38,12 @@ func CreateOrganizationHandler(enforcer *casbin.Enforcer) gin.HandlerFunc {
 			return
 		}
 
+		admin := models.User{
+			ID:    user.(models.Identity).ID,
+			Email: user.(models.Identity).Traits.Email,
+			Name:  user.(models.Identity).Traits.Name,
+			Role:  "admin"}
+
 		userID := user.(models.Identity).ID
 		if userID == "" {
 			c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
@@ -42,6 +55,7 @@ func CreateOrganizationHandler(enforcer *casbin.Enforcer) gin.HandlerFunc {
 			Description: input.Description,
 			CreatedBy:   userID,
 			CreatedAt:   time.Now(),
+			Users:       []models.User{admin},
 		}
 
 		collection := db.GetOrgCollection()
@@ -53,9 +67,25 @@ func CreateOrganizationHandler(enforcer *casbin.Enforcer) gin.HandlerFunc {
 
 		orgID := res.InsertedID.(primitive.ObjectID).Hex()
 
-		ok, err := enforcer.AddPolicy("admin", orgID, "/orgs/get/"+orgID, "GET")
+		policies := [][]string{
+			{"reader", orgID, "/orgs/get/" + orgID, "GET"},
+			{"writer", orgID, "/orgs/invite/" + orgID, "POST"},
+			{"invite", orgID, "/orgs/accept/" + orgID, "GET"},
+			{"admin", orgID, "/orgs/update-role/" + orgID, "POST"},
+		}
+
+		ok, err := enforcer.AddPolicies(policies)
 		if err != nil || !ok {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to assign policy"})
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to assign policies"})
+			return
+		}
+		grouingPolicies := [][]string{
+			{"admin", "writer", orgID},
+			{"writer", "reader", orgID},
+		}
+		ok, err = enforcer.AddNamedGroupingPolicies("g", grouingPolicies)
+		if err != nil || !ok {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to assign role"})
 			return
 		}
 		ok, err = enforcer.AddGroupingPolicy(userID, "admin", orgID)
@@ -112,7 +142,11 @@ func GetOrgByIDHandler(c *gin.Context) {
 
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
-
+	user, exists := c.Get("user")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "User not found in context"})
+		return
+	}
 	var org models.Organization
 	orgsCollection := db.GetOrgCollection()
 	err = orgsCollection.FindOne(ctx, bson.M{"_id": objectID}).Decode(&org)
@@ -124,6 +158,60 @@ func GetOrgByIDHandler(c *gin.Context) {
 		}
 		return
 	}
+	role := "reader"
+	for _, val := range org.Users {
+		if val.ID == user.(models.Identity).ID {
+			role = val.Role
+			break
+		}
+	}
 
-	c.JSON(http.StatusOK, org)
+	c.JSON(http.StatusOK, gin.H{
+		"org":  org,
+		"role": role,
+		"user": user,
+	})
+}
+func UpdateUserRoleInOrgHandler(enforcer *casbin.Enforcer) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		var input struct {
+			UserID string `json:"user_id" binding:"required"`
+			Role   string `json:"role" binding:"required"`
+		}
+
+		if err := c.ShouldBindJSON(&input); err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid input data"})
+			return
+		}
+
+		orgID := c.Param("id")
+		objectID, err := primitive.ObjectIDFromHex(orgID)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid organization ID"})
+			return
+		}
+
+		filter := bson.M{"_id": objectID, "users._id": input.UserID}
+		update := bson.M{"$set": bson.M{"users.$.role": input.Role}}
+
+		orgsCollection := db.GetOrgCollection()
+		result, err := orgsCollection.UpdateOne(context.TODO(), filter, update)
+		// fmt.Println("Update result:", filter, update, "result:", result, "error:", err)
+		if err != nil || result.MatchedCount == 0 {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update user role"})
+			return
+		}
+
+		oldRoles := enforcer.GetRolesForUserInDomain(input.UserID, orgID)
+		for _, role := range oldRoles {
+			_, _ = enforcer.DeleteRoleForUserInDomain(input.UserID, role, orgID)
+		}
+
+		_, err = enforcer.AddRoleForUserInDomain(input.UserID, input.Role, orgID)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update role"})
+			return
+		}
+		c.JSON(http.StatusOK, gin.H{"message": "User role updated successfully"})
+	}
 }

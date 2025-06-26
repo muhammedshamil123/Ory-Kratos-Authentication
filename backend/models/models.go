@@ -19,4 +19,11 @@ type Organization struct {
 	Description string             `bson:"description" json:"description"`
 	CreatedBy   string             `bson:"created_by" json:"created_by"`
 	CreatedAt   time.Time          `bson:"created_at" json:"created_at"`
+	Users       []User             `bson:"users"`
+}
+type User struct {
+	ID    string `bson:"_id,omitempty" json:"id"`
+	Email string `bson:"email" json:"email"`
+	Name  string `bson:"name" json:"name"`
+	Role  string `bson:"role" json:"role"`
 }

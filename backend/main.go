@@ -47,6 +47,9 @@ func main() {
 		authGroup.POST("/orgs/create", handler.CreateOrganizationHandler(enforcer))
 		authGroup.GET("/orgs/get", handler.GetAdminOrgs)
 		authGroup.GET("/orgs/get/:id", handler.GetOrgByIDHandler)
+		authGroup.POST("/orgs/invite/:id", handler.InviteUserHandler(enforcer))
+		authGroup.GET("/orgs/accept/:id", handler.AcceptInviteHandler(enforcer))
+		authGroup.POST("/orgs/update-role/:id", handler.UpdateUserRoleInOrgHandler(enforcer))
 	}
 
 	router.Run(":8080")

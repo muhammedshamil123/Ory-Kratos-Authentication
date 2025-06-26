@@ -148,52 +148,6 @@ const Protected = () => {
         color: COLORS.text
       }}
     >
-      {/* Light-themed Navbar */}
-      {/* <nav 
-        className="px-6 py-4 shadow-sm sticky top-0 z-50" 
-        style={{ 
-          backgroundColor: COLORS.primary,
-          borderBottom: `1px solid ${COLORS.border}`
-        }}
-      >
-        <div className="max-w-7xl mx-auto flex justify-between items-center">
-          <div className="flex items-center space-x-6">
-            <button
-              onClick={() => navigate('/')}
-              className="flex items-center space-x-2 hover:opacity-80 transition-opacity"
-              style={{ color: COLORS.text }}
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
-              </svg>
-              <span className="font-medium">Home</span>
-            </button>
-            
-            <h1 className="text-xl font-bold tracking-tight">
-              <span style={{ color: COLORS.accent }}>Admin</span> Dashboard
-            </h1>
-          </div>
-
-          <div className="flex items-center space-x-4">
-            <span className="hidden md:inline" style={{ color: COLORS.muted }}>
-              Welcome, {user?.traits?.name || 'Admin'}
-            </span>
-            
-            <button
-              onClick={handleLogout}
-              className="flex items-center space-x-2 px-4 py-2 rounded-md hover:bg-opacity-10 hover:bg-red-500 transition-colors"
-              style={{  backgroundColor: COLORS.danger,
-                color: 'white' }}
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-              </svg>
-              <span className="font-medium">Logout</span>
-            </button>
-          </div>
-        </div>
-      </nav> */}
-
       <main className="max-w-7xl mx-auto px-4 py-8 sm:px-6 lg:px-8">
         <div className="mb-12 text-center">
           <h2 className="text-2xl md:text-3xl font-bold mb-3">

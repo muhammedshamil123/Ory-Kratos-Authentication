@@ -8,6 +8,7 @@ import Dashboard from "./pages/Dashboard";
 import Organizations from "./pages/Organizations";
 import IAM from "./pages/IAM";
 import OrgDetails from "./pages/OrgDetails";
+import AcceptInvite from "./components/AcceptInvite";
 
 function App() {
   return (
@@ -22,6 +23,7 @@ function App() {
           <Route path="organization" element={<Organizations />} />
           <Route path="iam" element={<IAM />} />
           <Route path="orgs/:orgId" element={<OrgDetails/>}/>
+          <Route path="accept/:orgId" element={<AcceptInvite/>}/>
           <Route/>
         </Route>
       </Routes>

@@ -1,9 +1,11 @@
 import React from 'react';
 import COLORS from '../constants/Colors';
 import { Inbox } from '@novu/react';
+import { useNavigate } from 'react-router-dom';
 
 
-const Navbar = ({ toggleSidebar }) => {
+const Navbar = ({ toggleSidebar,user,role }) => {
+  const navigate = useNavigate();
   return (
     <nav className="px-8 py-5 shadow-lg sticky top-0 z-50" style={{ 
         backgroundColor: COLORS.secondary,
@@ -20,17 +22,16 @@ const Navbar = ({ toggleSidebar }) => {
                 </svg>
                 <span className="font-medium">Menu</span>
             </button>
-            <h1 className="text-2xl font-bold tracking-tight">
-              <span style={{ color: COLORS.accent }}>GitHub</span> Dashboard
+            <h1 className="text-2xl font-bold tracking-tight"> Dashboard
             </h1>
           </div>
           <div className="flex items-center space-x-6">
             <span className="hidden md:inline text-sm" style={{ color: COLORS.muted }}>
-              Logged in as <span style={{ color: COLORS.text }}>name</span>
+              Logged in as <span style={{ color: COLORS.text }}>{role}</span>
             </span>
             <Inbox
               applicationIdentifier="uNc8_gK2ynUR"
-              subscriberId="685a3f4bd80e094dc6b25ead"
+              subscriberId={user?.email}
               styles={{
                 root: { zIndex: 9999 },
                 popover: { zIndex: 9999 } 

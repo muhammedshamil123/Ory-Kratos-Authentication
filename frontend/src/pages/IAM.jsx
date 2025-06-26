@@ -50,12 +50,8 @@ function IAM() {
       }
 
       const data = await response.json();
-      if (!organizations){
-        setOrganizations(data);
-      }else{
-        setOrganizations(prev => [data, ...prev]); 
-      }
-      await Swal.fire({
+      setOrganizations(prev => Array.isArray(prev) ? [data, ...prev] : [data]);
+      Swal.fire({
         title: "Success!",
         text: `Organization ${name} created successfully.`,
         icon: "success",
@@ -88,7 +84,7 @@ function IAM() {
           <div className="text-gray-500 text-sm text-center py-10 border-t border-gray-100">
             Loading organizations...
           </div>
-        ) :  !organizations || organizations?.length === 0 ? (
+        ) : !Array.isArray(organizations) ||organizations?.length === 0 ? (
           <div className="text-gray-500 text-sm text-center py-10 border-t border-gray-100">
             No organizations found yet.
           </div>

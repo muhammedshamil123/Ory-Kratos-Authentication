@@ -45,7 +45,6 @@ func seedPolicy(e *casbin.Enforcer) {
 
 	// // Role hierarchy
 	// _, _ = e.AddGroupingPolicy("admin", "writer", "main")
-	// _, _ = e.AddGroupingPolicy("admin", "reader", "main")
 	// _, _ = e.AddGroupingPolicy("writer", "reader", "main")
 
 	// // Map users (UUIDs from Kratos) to roles
@@ -53,7 +52,7 @@ func seedPolicy(e *casbin.Enforcer) {
 	// _, _ = e.AddGroupingPolicy("6f652339-2ee8-4330-8a0f-47bd3214bea9", "reader", "main")
 	// _, _ = e.AddGroupingPolicy("2162fe0d-dd24-4530-80ae-ee6d9baadf50", "writer", "main")
 
-	_ = e.SavePolicy()
+	// _ = e.SavePolicy()
 }
 func AuthorizationMiddleware(e *casbin.Enforcer) gin.HandlerFunc {
 	return func(c *gin.Context) {
@@ -95,6 +94,7 @@ func AuthorizationMiddleware(e *casbin.Enforcer) gin.HandlerFunc {
 			dom = "main"
 		}
 		roles := e.GetRolesForUserInDomain(user, dom)
+		// fmt.Println("Roles for user:", user, "in domain:", dom, "are:", roles)
 		role := ""
 		if len(roles) > 0 {
 			role = roles[0]
@@ -112,8 +112,7 @@ func AuthorizationMiddleware(e *casbin.Enforcer) gin.HandlerFunc {
 		}
 
 		ok, err := e.Enforce(user, dom, obj, act)
-
-		fmt.Println("DOMAIN: ", dom, "ROLES: ", roles, "OBJ: ", obj, "ACT: ", act, "ROLE: ", role, "OK: ", ok)
+		// fmt.Println("Enforce result:", ok, "for user:", user, "role:", role, "object:", obj, "action:", act, "domain:", dom)
 		if err != nil {
 			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": "Internal error"})
 			return
