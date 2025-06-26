@@ -42,6 +42,7 @@ func seedPolicy(e *casbin.Enforcer) {
 	// _, _ = e.AddPolicy("reader", "main", "/github/repos", "GET")
 	// _, _ = e.AddPolicy("reader", "main", "/orgs/create", "POST")
 	// _, _ = e.AddPolicy("reader", "main", "/orgs/get", "GET")
+	// _, _ = e.AddPolicy("reader", "main", "/orgs/get-all", "GET")
 
 	// // Role hierarchy
 	// _, _ = e.AddGroupingPolicy("admin", "writer", "main")

@@ -13,8 +13,6 @@ function AcceptInvite() {
                     method: 'GET',
                     credentials: 'include',
                 });
-                const reposData = await res.json();
-                console.log(reposData);
                 if (!res.ok) throw new Error('Invite not found or already accepted');
                 await Swal.fire({
                     title: 'Welcome aboard!',
@@ -27,7 +25,6 @@ function AcceptInvite() {
                 navigate('/organization');
 
             }catch (err) {
-                console.error(err);
                 await Swal.fire({
                     title: 'Error',
                     text: err.message || 'An unexpected error occurred',

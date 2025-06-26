@@ -196,7 +196,6 @@ func UpdateUserRoleInOrgHandler(enforcer *casbin.Enforcer) gin.HandlerFunc {
 
 		orgsCollection := db.GetOrgCollection()
 		result, err := orgsCollection.UpdateOne(context.TODO(), filter, update)
-		// fmt.Println("Update result:", filter, update, "result:", result, "error:", err)
 		if err != nil || result.MatchedCount == 0 {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update user role"})
 			return
@@ -214,4 +213,41 @@ func UpdateUserRoleInOrgHandler(enforcer *casbin.Enforcer) gin.HandlerFunc {
 		}
 		c.JSON(http.StatusOK, gin.H{"message": "User role updated successfully"})
 	}
+}
+
+func GetUserOrgs(c *gin.Context) {
+	user, exists := c.Get("user")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "User not found in context"})
+		return
+	}
+
+	userID := user.(models.Identity).ID
+	if userID == "" {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
+		return
+	}
+
+	collection := db.GetOrgCollection()
+	filter := bson.M{
+		"users": bson.M{
+			"$elemMatch": bson.M{
+				"_id": userID,
+			},
+		},
+	}
+	cursor, err := collection.Find(context.TODO(), filter)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve organizations"})
+		return
+	}
+	defer cursor.Close(context.TODO())
+
+	var orgs []models.Organization
+	if err := cursor.All(context.TODO(), &orgs); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to decode organizations"})
+		return
+	}
+
+	c.JSON(http.StatusOK, orgs)
 }
