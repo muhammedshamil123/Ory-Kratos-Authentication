@@ -32,7 +32,7 @@ function AcceptInvite() {
                     background: COLORS.primary,
                     color: COLORS.text,
                 });
-                navigate('/');
+                navigate(-1);
             }
         }
         handleAccept();

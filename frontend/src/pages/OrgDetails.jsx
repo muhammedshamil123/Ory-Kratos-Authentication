@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import { useParams,useOutletContext } from 'react-router-dom';
+import { useParams,useOutletContext, useNavigate } from 'react-router-dom';
 import Swal from 'sweetalert2';
 import COLORS from '../constants/Colors';
+import { ArrowLeftIcon } from '@heroicons/react/24/solid';
 
 const OrgDetails = () => {
   const { orgId } = useParams();
@@ -11,6 +12,15 @@ const OrgDetails = () => {
   const [inviteEmail, setInviteEmail] = useState('');
   const [isLoading, setIsLoading] = useState(true);
   const [showInvite, setShowInvite] = useState(false);
+  const navigate= useNavigate();
+
+  const handleGoBack = () => {
+    if (window.history.length > 1) {
+      navigate(-1);
+    } else {
+      navigate('/');
+    }
+  };
 
   const showErrorAlert = (message = 'An unexpected error occurred') => {
     return Swal.fire({
@@ -107,8 +117,17 @@ const OrgDetails = () => {
   return (
     <div className="max-w-4xl mx-auto p-6 bg-white rounded-lg shadow-md border border-gray-200 ">
       <div className='flex justify-between items-start'>
-        <div>
-          <h2 className="text-2xl font-bold text-gray-800 mb-2">{org.name}</h2>
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center space-x-2">
+            <button
+              onClick={handleGoBack}
+              className="flex items-center p-2 rounded-md text-gray-700 hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-300"
+              aria-label="Go back"
+            >
+              <ArrowLeftIcon className="w-5 h-5 mr-2" />
+            </button>
+            <h2 className="text-xl font-semibold text-gray-800">{org.name}</h2>
+          </div>
         </div>
         
 
