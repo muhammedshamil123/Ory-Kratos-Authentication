@@ -30,31 +30,31 @@ func InitCasbin() (*casbin.Enforcer, error) {
 	return enforcer, nil
 }
 
-func seedPolicy(e *casbin.Enforcer) {
+// func seedPolicy(e *casbin.Enforcer) {
 
-	// _, _ = e.AddPolicy("reader", "main", "/home", "GET")
-	// _, _ = e.AddPolicy("reader", "main", "/login/github", "GET")
-	// _, _ = e.AddPolicy("reader", "main", "/github/callback", "GET")
-	// _, _ = e.AddPolicy("admin", "main", "/api/admin/update-role", "POST")
-	// _, _ = e.AddPolicy("admin", "main", "/api/admin/identities", "GET")
-	// _, _ = e.AddPolicy("admin", "main", "/protected", "GET")
-	// _, _ = e.AddPolicy("writer", "main", "/github/repos", "POST")
-	// _, _ = e.AddPolicy("reader", "main", "/github/repos", "GET")
-	// _, _ = e.AddPolicy("reader", "main", "/orgs/create", "POST")
-	// _, _ = e.AddPolicy("reader", "main", "/orgs/get", "GET")
-	// _, _ = e.AddPolicy("reader", "main", "/orgs/get-all", "GET")
+// 	_, _ = e.AddPolicy("reader", "main", "/home", "GET")
+// 	_, _ = e.AddPolicy("reader", "main", "/login/github", "GET")
+// 	_, _ = e.AddPolicy("reader", "main", "/github/callback", "GET")
+// 	_, _ = e.AddPolicy("admin", "main", "/api/admin/update-role", "POST")
+// 	_, _ = e.AddPolicy("admin", "main", "/api/admin/identities", "GET")
+// 	_, _ = e.AddPolicy("admin", "main", "/protected", "GET")
+// 	_, _ = e.AddPolicy("writer", "main", "/github/repos", "POST")
+// 	_, _ = e.AddPolicy("reader", "main", "/github/repos", "GET")
+// 	_, _ = e.AddPolicy("reader", "main", "/orgs/create", "POST")
+// 	_, _ = e.AddPolicy("reader", "main", "/orgs/get", "GET")
+// 	_, _ = e.AddPolicy("reader", "main", "/orgs/get-all", "GET")
 
-	// // Role hierarchy
-	// _, _ = e.AddGroupingPolicy("admin", "writer", "main")
-	// _, _ = e.AddGroupingPolicy("writer", "reader", "main")
+// 	// Role hierarchy
+// 	_, _ = e.AddGroupingPolicy("admin", "writer", "main")
+// 	_, _ = e.AddGroupingPolicy("writer", "reader", "main")
 
-	// // Map users (UUIDs from Kratos) to roles
-	// _, _ = e.AddGroupingPolicy("5a833c71-e6e8-4388-9c7c-39ac8a00055d", "admin", "main")
-	// _, _ = e.AddGroupingPolicy("6f652339-2ee8-4330-8a0f-47bd3214bea9", "reader", "main")
-	// _, _ = e.AddGroupingPolicy("2162fe0d-dd24-4530-80ae-ee6d9baadf50", "writer", "main")
+// // Map users (UUIDs from Kratos) to roles
+// _, _ = e.AddGroupingPolicy("5a833c71-e6e8-4388-9c7c-39ac8a00055d", "admin", "main")
+// _, _ = e.AddGroupingPolicy("6f652339-2ee8-4330-8a0f-47bd3214bea9", "reader", "main")
+// _, _ = e.AddGroupingPolicy("2162fe0d-dd24-4530-80ae-ee6d9baadf50", "writer", "main")
 
-	// _ = e.SavePolicy()
-}
+//		_ = e.SavePolicy()
+//	}
 func AuthorizationMiddleware(e *casbin.Enforcer) gin.HandlerFunc {
 	return func(c *gin.Context) {
 

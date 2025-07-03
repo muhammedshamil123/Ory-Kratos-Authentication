@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import { useParams,useOutletContext, useNavigate } from 'react-router-dom';
+import { useParams, useOutletContext, useNavigate } from 'react-router-dom';
 import Swal from 'sweetalert2';
 import COLORS from '../constants/Colors';
-import { ArrowLeftIcon } from '@heroicons/react/24/solid';
+import { FiArrowLeft, FiUser, FiMail, FiShield, FiPlus, FiX, FiSend } from 'react-icons/fi';
 
 const OrgDetails = () => {
   const { orgId } = useParams();
@@ -12,7 +12,7 @@ const OrgDetails = () => {
   const [inviteEmail, setInviteEmail] = useState('');
   const [isLoading, setIsLoading] = useState(true);
   const [showInvite, setShowInvite] = useState(false);
-  const navigate= useNavigate();
+  const navigate = useNavigate();
 
   const handleGoBack = () => {
     if (window.history.length > 1) {
@@ -28,15 +28,19 @@ const OrgDetails = () => {
       title: 'Oops!',
       text: message,
       confirmButtonText: 'Okay',
-      background: COLORS.primary,
+      background: COLORS.white,
       color: COLORS.text,
       confirmButtonColor: COLORS.danger,
+      customClass: {
+        popup: 'rounded-xl shadow-lg'
+      }
     });
   };
 
   useEffect(() => {
     const fetchOrgDetails = async () => {
       try {
+        setIsLoading(true);
         const response = await fetch(`http://localhost:8080/orgs/get/${orgId}`, {
           credentials: 'include',
         });
@@ -49,7 +53,7 @@ const OrgDetails = () => {
         setUser(data.user);
       } catch (error) {
         console.error('Error:', error);
-        await Swal.fire('Error', error.message, 'error');
+        await showErrorAlert(error.message);
       } finally {
         setIsLoading(false);
       }
@@ -59,27 +63,45 @@ const OrgDetails = () => {
   }, [orgId]);
 
   const handleInvite = async () => {
-    setShowInvite(false);
-    if (!inviteEmail) return;
+    if (!inviteEmail) {
+      await showErrorAlert('Please enter an email address');
+      return;
+    }
     
     try {
       const res = await fetch(`http://localhost:8080/orgs/invite/${orgId}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
-        body: JSON.stringify({ org_id:orgId,org_name:org.name, email: inviteEmail,description: org.description }), 
+        body: JSON.stringify({ 
+          org_id: orgId,
+          org_name: org.name, 
+          email: inviteEmail,
+          description: org.description 
+        }), 
       });
-      console.log(res);
+
       const reposData = await res.json();
-      console.log(reposData);
       if (!res.ok) throw new Error(reposData.error || 'Failed to send invite');
 
-      await Swal.fire('Invite Sent', `User invited to ${org.name}`, 'success');
+      await Swal.fire({
+        title: 'Invite Sent',
+        text: `User invited to ${org.name}`,
+        icon: 'success',
+        background: COLORS.white,
+        color: COLORS.text,
+        confirmButtonColor: COLORS.primary,
+        customClass: {
+          popup: 'rounded-xl shadow-lg'
+        }
+      });
       setInviteEmail('');
+      setShowInvite(false);
     } catch (err) {
-      await Swal.fire('Error', err.message, 'error');
+      await showErrorAlert(err.message);
     }
   };
+
   const updateUserRole = async (userId, newRole) => {
     try {
       const res = await fetch(`http://localhost:8080/orgs/update-role/${orgId}`, {
@@ -97,13 +119,16 @@ const OrgDetails = () => {
         )
       }));
 
-      Swal.fire({
+      await Swal.fire({
         icon: 'success',
         title: 'Role Updated',
         text: `Role set to ${newRole}`,
-        background: COLORS.primary,
+        background: COLORS.white,
         color: COLORS.text,
-        confirmButtonColor: COLORS.success,
+        confirmButtonColor: COLORS.primary,
+        customClass: {
+          popup: 'rounded-xl shadow-lg'
+        }
       });
     } catch (err) {
       console.error('Update role error:', err);
@@ -111,173 +136,276 @@ const OrgDetails = () => {
     }
   };
 
-  if (isLoading) return <div className="text-center py-10">Loading organization details...</div>;
-  if (!org) return <div className="text-center py-10 text-red-600">Organization not found</div>;
-
-  return (
-    <div className="max-w-4xl mx-auto p-6 bg-white rounded-lg shadow-md border border-gray-200 ">
-      <div className='flex justify-between items-start'>
-        <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center space-x-2">
-            <button
-              onClick={handleGoBack}
-              className="flex items-center p-2 rounded-md text-gray-700 hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-300"
-              aria-label="Go back"
-            >
-              <ArrowLeftIcon className="w-5 h-5 mr-2" />
-            </button>
-            <h2 className="text-xl font-semibold text-gray-800">{org.name}</h2>
-          </div>
-        </div>
-        
-
-        <div className="mt-6">
-          
-
-          {!showInvite && role!=="reader" &&(
-              <button
-              onClick={() => setShowInvite(true)}
-              className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md text-sm mb-4"
-              >
-            ➕ Invite Member
-              </button>
-          )}
+  if (isLoading) {
+    return (
+      <div className="flex justify-center items-center min-h-screen" style={{ backgroundColor: COLORS.background }}>
+        <div className="flex flex-col items-center">
+          <div 
+            className="w-12 h-12 border-4 border-t-cyan-400 border-r-cyan-400 border-b-transparent border-l-transparent rounded-full animate-spin mb-4"
+            style={{ 
+              borderTopColor: COLORS.primary,
+              borderRightColor: COLORS.primary 
+            }}
+          ></div>
+          <span className="text-lg" style={{ color: COLORS.text }}>
+            Loading organization details...
+          </span>
         </div>
       </div>
-      <div>
-        <p className="text-gray-600 mb-4">{org.description || 'No description provided.'}</p>
-        {showInvite &&  (
-          <div>
-            <h3 className="text-lg font-semibold text-gray-800 mb-2">Invite Member</h3>
+    );
+  }
+
+  if (!org) {
+    return (
+      <div className="flex justify-center items-center min-h-screen" style={{ backgroundColor: COLORS.background }}>
+        <div 
+          className="max-w-md p-6 rounded-xl text-center"
+          style={{ 
+            backgroundColor: COLORS.white,
+            border: `1px solid ${COLORS.border}`,
+            boxShadow: '0 4px 20px rgba(0, 0, 0, 0.08)'
+          }}
+        >
+          <h3 className="text-xl font-semibold mb-2" style={{ color: COLORS.danger }}>
+            Organization not found
+          </h3>
+          <button
+            onClick={handleGoBack}
+            className="px-4 py-2 rounded-lg font-medium mt-4"
+            style={{ 
+              backgroundColor: COLORS.primary,
+              color: COLORS.white
+            }}
+          >
+            Go Back
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div 
+      className="min-h-screen p-6" 
+      style={{ 
+        backgroundColor: COLORS.background,
+        color: COLORS.text
+      }}
+    >
+      <div 
+        className="max-w-4xl mx-auto p-6 rounded-xl shadow-sm"
+        style={{ 
+          backgroundColor: COLORS.white,
+          border: `1px solid ${COLORS.border}`
+        }}
+      >
+        <div className='flex justify-between items-start mb-6'>
+          <div className="flex items-center space-x-3">
+            <button
+              onClick={handleGoBack}
+              className="p-2 rounded-md hover:bg-gray-100 transition-colors"
+              style={{ color: COLORS.text }}
+              aria-label="Go back"
+            >
+              <FiArrowLeft className="w-5 h-5" />
+            </button>
+            <h2 className="text-2xl font-bold" style={{ color: COLORS.text }}>
+              {org.name}
+            </h2>
+          </div>
+          
+          {!showInvite && role !== "reader" && (
+            <button
+              onClick={() => setShowInvite(true)}
+              className="flex items-center space-x-2 px-4 py-2 rounded-lg transition-all hover:opacity-90"
+              style={{ 
+                backgroundColor: COLORS.primary,
+                color: COLORS.white
+              }}
+            >
+              <FiPlus className="w-5 h-5" />
+              <span>Invite Member</span>
+            </button>
+          )}
+        </div>
+
+        <p className="text-gray-600 mb-8" style={{ color: COLORS.textSecondary }}>
+          {org.description || 'No description provided.'}
+        </p>
+
+        {showInvite && (
+          <div className="mb-8 p-4 rounded-lg" style={{ backgroundColor: COLORS.backgroundSecondary }}>
+            <h3 className="text-lg font-semibold mb-3" style={{ color: COLORS.text }}>
+              Invite Member
+            </h3>
             <div className="flex gap-2">
               <input
                 type="email"
                 value={inviteEmail}
                 onChange={(e) => setInviteEmail(e.target.value)}
                 placeholder="Enter user email"
-                className="flex-1 border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="flex-1 border rounded-lg px-3 py-2 focus:outline-none focus:ring-2"
+                style={{ 
+                  borderColor: COLORS.border,
+                  focusRingColor: COLORS.primary
+                }}
               />
               <button
                 onClick={() => setShowInvite(false)}
-                className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md text-sm"
+                className="flex items-center px-4 py-2 rounded-lg transition-colors"
+                style={{ 
+                  backgroundColor: COLORS.dangerLight,
+                  color: COLORS.danger,
+                  hoverBackground: `${COLORS.danger}20`
+                }}
               >
+                <FiX className="mr-1" />
                 Cancel
-              </button><button
+              </button>
+              <button
                 onClick={handleInvite}
-                className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm"
+                className="flex items-center px-4 py-2 rounded-lg transition-colors"
+                style={{ 
+                  backgroundColor: COLORS.primary,
+                  color: COLORS.white,
+                  hoverBackground: COLORS.primaryDark
+                }}
               >
-                Send Invite
+                <FiSend className="mr-1" />
+                Send
               </button>
             </div>
           </div>
         )}
-        <section className="space-y-6">
-          {!Array.isArray(org.Users)||org.Users?.length === 0 ? (
-            <div className="text-gray-500 text-sm text-center py-10 border-t border-gray-100">
-              No members found in this organization.
+
+        <section className="space-y-4">
+          {!Array.isArray(org.Users) || org.Users?.length === 0 ? (
+            <div 
+              className="text-center py-10 border-t rounded-lg"
+              style={{ 
+                borderColor: COLORS.border,
+                color: COLORS.textSecondary
+              }}
+            >
+              <FiUser className="w-12 h-12 mx-auto mb-4" style={{ color: COLORS.muted }} />
+              <p className="text-lg">No members found in this organization</p>
             </div>
-          ):(
-          <div className="grid gap-4">
-            {org.Users?.map((identity) => (
-              <UserCard
-                key={identity.id}
-                identity={identity}
-                currentUserId={user?.id}
-                onRoleUpdate={updateUserRole}
-                colors={COLORS}
-                role={role}
-              />
-            ))}
-          </div>
+          ) : (
+            <div className="grid gap-4">
+              {org.Users?.map((identity) => (
+                <UserCard
+                  key={identity.id}
+                  identity={identity}
+                  currentUserId={user?.id}
+                  onRoleUpdate={updateUserRole}
+                  colors={COLORS}
+                  role={role}
+                />
+              ))}
+            </div>
           )}
         </section>
-
-          
       </div>
     </div>
   );
 };
-const UserCard = ({ identity, currentUserId, onRoleUpdate, colors,role }) => {
+
+const UserCard = ({ identity, currentUserId, onRoleUpdate, colors, role }) => {
   const isCurrentUser = identity.id === currentUserId;
   const roleOptions = ['reader', 'writer', 'admin'];
+
   return (
     <div 
-      className="p-6 rounded-lg shadow-sm transition-all duration-200 hover:shadow-md"
-      style={{
-        backgroundColor: colors.primary,
-        border: `1px solid ${colors.border}`
+      className="p-6 rounded-xl transition-all duration-200 hover:-translate-y-1 hover:shadow-lg"
+      style={{ 
+        backgroundColor: colors.white,
+        border: `1px solid ${colors.border}`,
+        boxShadow: '0 2px 8px rgba(0, 0, 0, 0.05)'
       }}
     >
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
-        <div className="space-y-2">
-          <h4 className="text-lg font-semibold">
-            {identity?.name || 'Unnamed User'}
-          </h4>
-          
-          <div className="flex flex-wrap gap-x-6 gap-y-2 text-sm">
-            <div className="flex items-center">
-              <span style={{ color: colors.muted }} className="mr-2">Email:</span>
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div className="flex items-center space-x-4">
+          <div 
+            className="flex items-center justify-center w-10 h-10 rounded-full"
+            style={{
+              backgroundColor: colors.primary,
+              color: colors.white,
+              fontWeight: 500
+            }}
+          >
+            {identity?.name?.charAt(0).toUpperCase() || 'U'}
+          </div>
+          <div>
+            <h4 className="text-lg font-semibold" style={{ color: colors.text }}>
+              {identity?.name || 'Unnamed User'}
+            </h4>
+            <div className="flex items-center text-sm" style={{ color: colors.textSecondary }}>
+              <FiMail className="mr-1" size={14} />
               <span>{identity?.email || 'N/A'}</span>
-            </div>
-            
-            <div className="flex items-center">
-              <span style={{ color: colors.muted }} className="mr-2">Status:</span>
-              <span 
-                className="px-2 py-1 rounded text-xs font-medium"
-                style={{
-                  backgroundColor: 
-                    identity.role === 'admin' 
-                      ? `${colors.accent}10` 
-                      : identity.role === 'writer' 
-                        ? '#3b82f610' 
-                        : '#64748b10',
-                  color: 
-                    identity.role === 'admin' 
-                      ? colors.accent 
-                      : identity.role === 'writer' 
-                        ? '#3b82f6' 
-                        : colors.muted
-                }}
-              >
-                {identity.role || 'undefined'}
-              </span>
             </div>
           </div>
         </div>
 
-        {role=="admin" && <div className="flex flex-wrap gap-2">
-          {roleOptions.map((role) => {
-            const isActive = identity.role === role;
-            return (
-              <button
-                key={role}
-                onClick={() => onRoleUpdate(identity.id, role)}
-                disabled={isActive || isCurrentUser}
-                className={`px-3 py-1.5 rounded-md text-sm font-medium transition-all ${
-                  isActive
-                    ? 'cursor-default'
-                    : isCurrentUser 
-                      ? 'opacity-50 cursor-not-allowed' 
-                      : 'hover:opacity-90'
-                }`}
-                style={{
-                  backgroundColor: isActive 
-                    ? colors.accent 
-                    : `${colors.accent}05`,
-                  color: isActive 
-                    ? 'white'
-                    : colors.accent,
-                  border: isActive 
-                    ? 'none'
-                    : `1px solid ${colors.accent}30`
-                }}
-                aria-label={`Set role to ${role}`}
-              >
-                {role.charAt(0).toUpperCase() + role.slice(1)}
-              </button>
-            );
-          })}
-        </div>}
+        <div className="flex items-center space-x-4">
+          <div className="flex items-center">
+            <FiShield className="mr-1" style={{ color: colors.textSecondary }} />
+            <span 
+              className="px-2 py-1 rounded text-xs font-medium"
+              style={{
+                backgroundColor: 
+                  identity.role === 'admin' 
+                    ? `${colors.primary}10` 
+                    : identity.role === 'writer' 
+                      ? `${colors.accent}10` 
+                      : `${colors.muted}10`,
+                color: 
+                  identity.role === 'admin' 
+                    ? colors.primary 
+                    : identity.role === 'writer' 
+                      ? colors.accent 
+                      : colors.muted
+              }}
+            >
+              {identity.role || 'undefined'}
+            </span>
+          </div>
+
+          {role === "admin" && (
+            <div className="flex flex-wrap gap-2">
+              {roleOptions.map((option) => {
+                const isActive = identity.role === option;
+                return (
+                  <button
+                    key={option}
+                    onClick={() => onRoleUpdate(identity.id, option)}
+                    disabled={isActive || isCurrentUser}
+                    className={`px-3 py-1.5 rounded-md text-sm font-medium transition-all ${
+                      isActive
+                        ? 'cursor-default'
+                        : isCurrentUser 
+                          ? 'opacity-50 cursor-not-allowed' 
+                          : 'hover:opacity-90'
+                    }`}
+                    style={{
+                      backgroundColor: isActive 
+                        ? colors.primary 
+                        : `${colors.primary}05`,
+                      color: isActive 
+                        ? colors.white
+                        : colors.primary,
+                      border: isActive 
+                        ? 'none'
+                        : `1px solid ${colors.primary}20`
+                    }}
+                    aria-label={`Set role to ${option}`}
+                  >
+                    {option.charAt(0).toUpperCase() + option.slice(1)}
+                  </button>
+                );
+              })}
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );

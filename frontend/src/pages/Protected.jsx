@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Swal from 'sweetalert2';
 import COLORS from '../constants/Colors';
+import { FiUser, FiMail, FiShield, FiLoader, FiAlertCircle } from 'react-icons/fi';
 
 const API_BASE_URL = 'http://localhost:8080';
 
@@ -18,9 +19,12 @@ const Protected = () => {
       title: 'Oops!',
       text: message,
       confirmButtonText: 'Okay',
-      background: COLORS.primary,
+      background: COLORS.white,
       color: COLORS.text,
       confirmButtonColor: COLORS.danger,
+      customClass: {
+        popup: 'rounded-xl shadow-lg'
+      }
     });
   };
 
@@ -80,9 +84,12 @@ const Protected = () => {
         icon: 'success',
         title: 'Role Updated',
         text: `Role set to ${newRole}`,
-        background: COLORS.primary,
+        background: COLORS.white,
         color: COLORS.text,
-        confirmButtonColor: COLORS.success,
+        confirmButtonColor: COLORS.primary,
+        customClass: {
+          popup: 'rounded-xl shadow-lg'
+        }
       });
     } catch (err) {
       console.error('Update role error:', err);
@@ -95,8 +102,7 @@ const Protected = () => {
       setIsLoading(true);
       try {
         const currentUser = await fetchUserData();
-        if (currentUser) {await fetchIdentities();}
-        await new Promise(resolve => setTimeout(resolve, 500));
+        if (currentUser) { await fetchIdentities(); }
       } catch (err) {
         console.error('Initialization error:', err);
         navigate('/');
@@ -109,28 +115,45 @@ const Protected = () => {
   }, [navigate]);
 
   if (isLoading) {
-  return (
-    <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: COLORS.primary }}>
-      <div className="flex flex-col items-center">
-        <div className="w-12 h-12 border-4 border-t-cyan-400 border-r-cyan-400 border-b-transparent border-l-transparent rounded-full animate-spin mb-4"></div>
-        <span className="text-lg font-medium" style={{ color: COLORS.text }}>Loading your dashboard...</span>
+    return (
+      <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: COLORS.background }}>
+        <div className="flex flex-col items-center">
+          <div 
+            className="w-12 h-12 border-4 border-t-cyan-400 border-r-cyan-400 border-b-transparent border-l-transparent rounded-full animate-spin mb-4"
+            style={{ 
+              borderTopColor: COLORS.primary,
+              borderRightColor: COLORS.primary 
+            }}
+          ></div>
+          <span className="text-lg font-medium" style={{ color: COLORS.text }}>
+            Loading Admin Dashboard...
+          </span>
+        </div>
       </div>
-    </div>
-  );
-}
-
+    );
+  }
 
   if (error) {
     return (
-      <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: COLORS.primary }}>
-        <div className="text-center">
-          <div className="text-2xl mb-2" style={{ color: COLORS.danger }}>{error}</div>
+      <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: COLORS.background }}>
+        <div 
+          className="max-w-md p-6 rounded-xl text-center"
+          style={{ 
+            backgroundColor: COLORS.white,
+            border: `1px solid ${COLORS.border}`,
+            boxShadow: '0 4px 20px rgba(0, 0, 0, 0.08)'
+          }}
+        >
+          <FiAlertCircle className="w-12 h-12 mx-auto mb-4" style={{ color: COLORS.danger }} />
+          <h3 className="text-xl font-semibold mb-2" style={{ color: COLORS.danger }}>
+            {error}
+          </h3>
           <button 
             onClick={() => window.location.reload()}
-            className="px-4 py-2 rounded-md"
+            className="px-4 py-2 rounded-lg font-medium mt-4"
             style={{ 
-              backgroundColor: COLORS.accent,
-              color: 'white'
+              backgroundColor: COLORS.primary,
+              color: COLORS.white
             }}
           >
             Try Again
@@ -142,9 +165,9 @@ const Protected = () => {
 
   return (
     <div 
-      className="min-h-screen font-sans" 
+      className="min-h-screen" 
       style={{ 
-        backgroundColor: COLORS.secondary,
+        backgroundColor: COLORS.background,
         color: COLORS.text
       }}
     >
@@ -153,12 +176,12 @@ const Protected = () => {
           <h2 className="text-2xl md:text-3xl font-bold mb-3">
             User Management
           </h2>
-          <p style={{ color: COLORS.muted }}>
+          <p style={{ color: COLORS.textSecondary }}>
             Manage user roles and access privileges
           </p>
         </div>
 
-        <section className="space-y-6">
+        <section className="space-y-4">
           <div className="grid gap-4">
             {identities.map((identity) => (
               <UserCard
@@ -182,82 +205,96 @@ const UserCard = ({ identity, currentUserId, onRoleUpdate, colors }) => {
 
   return (
     <div 
-      className="p-6 rounded-lg shadow-sm transition-all duration-200 hover:shadow-md"
+      className="p-6 rounded-xl transition-all duration-200 hover:shadow-md"
       style={{
-        backgroundColor: colors.primary,
-        border: `1px solid ${colors.border}`
+        backgroundColor: colors.white,
+        border: `1px solid ${colors.border}`,
+        boxShadow: '0 2px 8px rgba(0, 0, 0, 0.05)'
       }}
     >
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div className="space-y-2">
-          <h4 className="text-lg font-semibold">
-            {identity.traits?.name || 'Unnamed User'}
-          </h4>
-          
-          <div className="flex flex-wrap gap-x-6 gap-y-2 text-sm">
-            <div className="flex items-center">
-              <span style={{ color: colors.muted }} className="mr-2">Email:</span>
-              <span>{identity.traits?.email || 'N/A'}</span>
+          <div className="flex items-center space-x-3">
+            <div 
+              className="flex items-center justify-center w-10 h-10 rounded-full"
+              style={{
+                backgroundColor: colors.primary,
+                color: colors.white,
+                fontWeight: 500
+              }}
+            >
+              {identity.traits?.name?.charAt(0).toUpperCase() || 'U'}
             </div>
-            
-            <div className="flex items-center">
-              <span style={{ color: colors.muted }} className="mr-2">Status:</span>
-              <span 
-                className="px-2 py-1 rounded text-xs font-medium"
-                style={{
-                  backgroundColor: 
-                    identity.role === 'admin' 
-                      ? `${colors.accent}10` 
-                      : identity.role === 'writer' 
-                        ? '#3b82f610' 
-                        : '#64748b10',
-                  color: 
-                    identity.role === 'admin' 
-                      ? colors.accent 
-                      : identity.role === 'writer' 
-                        ? '#3b82f6' 
-                        : colors.muted
-                }}
-              >
-                {identity.role || 'undefined'}
-              </span>
+            <div>
+              <h4 className="text-lg font-semibold">
+                {identity.traits?.name || 'Unnamed User'}
+              </h4>
+              <div className="flex items-center text-sm" style={{ color: colors.textSecondary }}>
+                <FiMail className="mr-1" size={14} />
+                <span>{identity.traits?.email || 'N/A'}</span>
+              </div>
             </div>
           </div>
         </div>
 
-        <div className="flex flex-wrap gap-2">
-          {roleOptions.map((role) => {
-            const isActive = identity.role === role;
-            
-            return (
-              <button
-                key={role}
-                onClick={() => onRoleUpdate(identity.id, role)}
-                disabled={isActive || isCurrentUser}
-                className={`px-3 py-1.5 rounded-md text-sm font-medium transition-all ${
-                  isActive
-                    ? 'cursor-default'
-                    : isCurrentUser 
-                      ? 'opacity-50 cursor-not-allowed' 
-                      : 'hover:opacity-90'
-                }`}
-                style={{
-                  backgroundColor: isActive 
-                    ? colors.accent 
-                    : `${colors.accent}05`,
-                  color: isActive 
-                    ? 'white'
-                    : colors.accent,
-                  border: isActive 
-                    ? 'none'
-                    : `1px solid ${colors.accent}30`
-                }}
-                aria-label={`Set role to ${role}`}
-              >
-                {role.charAt(0).toUpperCase() + role.slice(1)}
-              </button>
-            );
-          })}
+        <div className="flex flex-wrap items-center gap-2">
+          <div className="flex items-center mr-2">
+            <FiShield className="mr-1" style={{ color: colors.textSecondary }} />
+            <span 
+              className="px-2 py-1 rounded text-xs font-medium"
+              style={{
+                backgroundColor: 
+                  identity.role === 'admin' 
+                    ? `${colors.primary}10` 
+                    : identity.role === 'writer' 
+                      ? `${colors.accent}10` 
+                      : `${colors.muted}10`,
+                color: 
+                  identity.role === 'admin' 
+                    ? colors.primary 
+                    : identity.role === 'writer' 
+                      ? colors.accent 
+                      : colors.muted
+              }}
+            >
+              {identity.role || 'undefined'}
+            </span>
+          </div>
+
+          <div className="flex flex-wrap gap-2">
+            {roleOptions.map((role) => {
+              const isActive = identity.role === role;
+              
+              return (
+                <button
+                  key={role}
+                  onClick={() => onRoleUpdate(identity.id, role)}
+                  disabled={isActive || isCurrentUser}
+                  className={`px-3 py-1.5 rounded-md text-sm font-medium transition-all ${
+                    isActive
+                      ? 'cursor-default'
+                      : isCurrentUser 
+                        ? 'opacity-50 cursor-not-allowed' 
+                        : 'hover:opacity-90'
+                  }`}
+                  style={{
+                    backgroundColor: isActive 
+                      ? colors.primary 
+                      : `${colors.primary}05`,
+                    color: isActive 
+                      ? colors.white
+                      : colors.primary,
+                    border: isActive 
+                      ? 'none'
+                      : `1px solid ${colors.primary}20`
+                  }}
+                  aria-label={`Set role to ${role}`}
+                >
+                  {role.charAt(0).toUpperCase() + role.slice(1)}
+                </button>
+              );
+            })}
+          </div>
         </div>
       </div>
     </div>

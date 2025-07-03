@@ -131,7 +131,9 @@ func InviteUserHandler(enforcer *casbin.Enforcer) gin.HandlerFunc {
 }
 
 func AcceptInviteHandler(enforcer *casbin.Enforcer) gin.HandlerFunc {
+
 	return func(c *gin.Context) {
+		fmt.Println("AcceptInviteHandler called")
 		orgID := c.Param("id")
 
 		user, exists := c.Get("user")
@@ -171,7 +173,8 @@ func AcceptInviteHandler(enforcer *casbin.Enforcer) gin.HandlerFunc {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to assign role"})
 			return
 		}
-
+		fmt.Println("User", newUser.Email, "added to org", orgID)
+		c.Header("Content-Type", "application/json")
 		c.JSON(http.StatusOK, gin.H{"message": "User added to organization successfully"})
 	}
 }
