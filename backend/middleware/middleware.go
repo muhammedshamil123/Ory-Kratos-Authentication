@@ -58,6 +58,7 @@ func InitCasbin() (*casbin.Enforcer, error) {
 func AuthorizationMiddleware(e *casbin.Enforcer) gin.HandlerFunc {
 	return func(c *gin.Context) {
 
+		_ = e.LoadPolicy()
 		cookie, err := c.Request.Cookie("ory_kratos_session")
 		if err != nil {
 			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "Missing session cookie"})
@@ -94,15 +95,14 @@ func AuthorizationMiddleware(e *casbin.Enforcer) gin.HandlerFunc {
 		if dom == "" {
 			dom = "main"
 		}
-		roles := e.GetRolesForUserInDomain(user, dom)
-		// fmt.Println("Roles for user:", user, "in domain:", dom, "are:", roles)
+		roles := e.GetRolesForUserInDomain(user, "main")
 		role := ""
 		if len(roles) > 0 {
 			role = roles[0]
 		} else {
-			hasGroup, _ := e.GetRoleManager().HasLink(user, "reader", dom)
+			hasGroup, _ := e.GetRoleManager().HasLink(user, "reader", "main")
 			if !hasGroup {
-				_, err = e.AddGroupingPolicy(user, "reader", dom)
+				_, err = e.AddGroupingPolicy(user, "reader", "main")
 				if err != nil {
 					fmt.Println("failed to assign role:", err)
 					return
@@ -113,13 +113,16 @@ func AuthorizationMiddleware(e *casbin.Enforcer) gin.HandlerFunc {
 		}
 
 		ok, err := e.Enforce(user, dom, obj, act)
-		// fmt.Println("Enforce result:", ok, "for user:", user, "role:", role, "object:", obj, "action:", act, "domain:", dom)
 		if err != nil {
 			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": "Internal error"})
 			return
 		}
-		if !ok {
+		fmt.Println(obj, act, obj != "/github/repos" && act != "GET")
+		if !ok && obj != "/github/repos" && act != "GET" {
 			c.AbortWithStatusJSON(http.StatusForbidden, gin.H{"error": "Access denied"})
+			return
+		} else if !ok {
+			c.AbortWithStatusJSON(http.StatusForbidden, gin.H{"error": "Invite already accepted"})
 			return
 		}
 

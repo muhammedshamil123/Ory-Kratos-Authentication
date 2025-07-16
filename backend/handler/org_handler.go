@@ -14,13 +14,6 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
-type InviteRequest struct {
-	OrgID       string `json:"org_id"`
-	OrgName     string `json:"org_name"`
-	Email       string `json:"email"`
-	Description string `json:"description"`
-}
-
 func CreateOrganizationHandler(enforcer *casbin.Enforcer) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var input struct {

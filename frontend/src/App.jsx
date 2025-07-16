@@ -17,13 +17,13 @@ function App() {
         
         <Route path="/login" element={<Login/>} />
         <Route path="/register" element={<Signup/>}/>
+        <Route path="accept/:orgId" element={<AcceptInvite/>}/>
         <Route path="/" element={<Dashboard />}>
           <Route index element={<Home/>}/>
           <Route path="protected" element={<Protected />} />
           <Route path="organization" element={<Organizations />} />
           <Route path="iam" element={<IAM />} />
           <Route path="orgs/:orgId" element={<OrgDetails/>}/>
-          <Route path="accept/:orgId" element={<AcceptInvite/>}/>
           <Route/>
         </Route>
       </Routes>

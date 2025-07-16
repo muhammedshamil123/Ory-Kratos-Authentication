@@ -1,25 +1,23 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { useRef } from 'react';
 import Swal from 'sweetalert2';
 import COLORS from '../constants/Colors';
-let inviteAccepted = false;
+
 function AcceptInvite() {
   const { orgId } = useParams();
   const navigate = useNavigate();
+  const inviteAccepted = useRef(false);
 
   useEffect(() => {
-    if (inviteAccepted) return;
-    inviteAccepted = true;
+    if (inviteAccepted.current) return;
+    inviteAccepted.current = true;
 
     const handleAccept = async () => {
       try {
         const res = await fetch(`http://localhost:8080/orgs/accept/${orgId}`, {
-          method: 'GET', // or GET if your backend still requires it
+          method: 'GET', 
           credentials: 'include',
         });
-
-        console.log('Fetch status:', res.status);
 
         if (!res.ok) {
           let errorMessage = `Failed to accept invite (${res.status})`;
@@ -27,15 +25,15 @@ function AcceptInvite() {
             const data = await res.json();
             errorMessage = data?.error || data?.message || errorMessage;
           } catch {
-            // ignore if parsing fails
+            errorMessage = `Failed to accept invite (${res.status}) - Unable to parse error response`;
           }
           throw new Error(errorMessage);
         }
 
-        const data = await res.json();
+        const data =await res.json();
         const successMessage = data?.message || 'Successfully joined the organization';
 
-        await Swal.fire({
+        Swal.fire({
           title: 'Welcome aboard! 🎉',
           text: successMessage,
           icon: 'success',
@@ -43,16 +41,16 @@ function AcceptInvite() {
           color: COLORS.text,
         });
 
-        navigate('/organization');
+        navigate(`/orgs/${orgId}`);
       } catch (err) {
-        await Swal.fire({
+        Swal.fire({
           title: 'Invite Failed 😓',
           text: err?.message || 'An unexpected error occurred.',
           icon: 'error',
           background: COLORS.primary,
           color: COLORS.text,
         });
-        navigate(-1);
+        navigate("/");
       }
     };
 

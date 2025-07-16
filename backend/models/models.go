@@ -27,3 +27,35 @@ type User struct {
 	Name  string `bson:"name" json:"name"`
 	Role  string `bson:"role" json:"role"`
 }
+
+type CreateRepoInput struct {
+	Name        string
+	Description string
+	Private     bool
+	GithubToken string
+}
+type InviteRequest struct {
+	OrgID       string `json:"org_id"`
+	OrgName     string `json:"org_name"`
+	Email       string `json:"email"`
+	Description string `json:"description"`
+}
+type CreateInvite struct {
+	OrgID       string
+	OrgName     string
+	Email       string
+	Description string
+	UserId      string
+}
+type IdentetyEmail struct {
+	Email      string
+	Identities []map[string]interface{}
+}
+type SelfActivity struct {
+	UserId   string
+	SenderId string
+}
+type AddCasbinPolicy struct {
+	UserId string
+	OrgId  string
+}

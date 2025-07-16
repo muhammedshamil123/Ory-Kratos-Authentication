@@ -1,13 +1,17 @@
 package handler
 
 import (
+	"backend/models"
+	"backend/temporal/workflows"
 	"context"
 	"encoding/json"
+	"fmt"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/go-github/v55/github"
-	"golang.org/x/oauth2"
+	"github.com/google/uuid"
+	"go.temporal.io/sdk/client"
 )
 
 func HomePage(c *gin.Context) {
@@ -82,39 +86,53 @@ func GitHubRepos(c *gin.Context) {
 	c.JSON(http.StatusOK, repos)
 }
 
-func CreateRepoHandler(c *gin.Context) {
-	var body struct {
-		Name        string `json:"name"`
-		Description string `json:"description"`
-		Private     bool   `json:"private"`
+func CreateRepoHandler(temporalClient client.Client) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		var body struct {
+			Name        string `json:"name"`
+			Description string `json:"description"`
+			Private     bool   `json:"private"`
+		}
+
+		if err := c.BindJSON(&body); err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"message": "Invalid input"})
+			return
+		}
+
+		token, err := c.Cookie("github_token")
+		if err != nil {
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "Missing GitHub token"})
+			return
+		}
+
+		workflowID := fmt.Sprintf("create-repo-%s", uuid.NewString())
+
+		we, err := temporalClient.ExecuteWorkflow(
+			context.Background(),
+			client.StartWorkflowOptions{
+				ID:        workflowID,
+				TaskQueue: "CREATE_REPO_QUEUE",
+			},
+			workflows.CreateRepoWorkflow,
+			models.CreateRepoInput{
+				Name:        body.Name,
+				Description: body.Description,
+				Private:     body.Private,
+				GithubToken: token,
+			},
+		)
+
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
+		}
+
+		var repo *github.Repository
+		if err := we.Get(context.Background(), &repo); err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
+		}
+
+		c.JSON(http.StatusOK, repo)
 	}
-
-	if err := c.BindJSON(&body); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"message": "Invalid input"})
-		return
-	}
-
-	token, err := c.Cookie("github_token")
-	if err != nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Missing GitHub token"})
-		return
-	}
-
-	client := oauth2.NewClient(context.Background(), oauth2.StaticTokenSource(
-		&oauth2.Token{AccessToken: token},
-	))
-
-	repo := &github.Repository{
-		Name:        github.String(body.Name),
-		Description: github.String(body.Description),
-		Private:     github.Bool(body.Private),
-	}
-
-	createdRepo, _, err := github.NewClient(client).Repositories.Create(context.Background(), "", repo)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
-		return
-	}
-
-	c.JSON(http.StatusOK, createdRepo)
 }

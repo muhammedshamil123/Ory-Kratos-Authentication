@@ -40,7 +40,6 @@ function CreateOrgModal({ isOpen, onClose, onCreate, colors }) {
         }
       }}
     >
-      {/* Backdrop with blur effect */}
       <div 
         className={`fixed inset-0 transition-opacity duration-300 ${
           closing ? "opacity-0" : "opacity-100"
@@ -51,7 +50,6 @@ function CreateOrgModal({ isOpen, onClose, onCreate, colors }) {
         }}
       ></div>
 
-      {/* Modal content */}
       <div
         className={`relative w-full max-w-md rounded-xl shadow-2xl transform transition-all duration-300 ${
           closing ? "opacity-0 translate-y-4" : "opacity-100 translate-y-0"
@@ -64,7 +62,6 @@ function CreateOrgModal({ isOpen, onClose, onCreate, colors }) {
         }}
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Header */}
         <div className="flex justify-between items-center p-6 border-b" style={{ borderColor: colors.border }}>
           <div className="flex items-center space-x-3">
             <FiUsers className="w-6 h-6" style={{ color: colors.text }} />

@@ -9,9 +9,15 @@ import (
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
+	"go.temporal.io/sdk/client"
 )
 
 func main() {
+	temporalClient, err := client.Dial(client.Options{})
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer temporalClient.Close()
 	db.ConnectDB("mongodb://localhost:27017")
 	router := gin.Default()
 
@@ -40,7 +46,7 @@ func main() {
 		authGroup.GET("/login/github", handler.GitHubLogin)
 		authGroup.GET("/github/callback", handler.GitHubCallback)
 		authGroup.GET("/github/repos", handler.GitHubRepos)
-		authGroup.POST("/github/repos", handler.CreateRepoHandler)
+		authGroup.POST("/github/repos", handler.CreateRepoHandler(temporalClient))
 		authGroup.GET("/protected", handler.HomePage)
 		authGroup.GET("/api/admin/identities", handler.GetIdentities(enforcer))
 		authGroup.POST("/api/admin/update-role", handler.UpdateUserRole(enforcer))
@@ -48,7 +54,7 @@ func main() {
 		authGroup.GET("/orgs/get", handler.GetAdminOrgs)
 		authGroup.GET("/orgs/get-all", handler.GetUserOrgs)
 		authGroup.GET("/orgs/get/:id", handler.GetOrgByIDHandler)
-		authGroup.POST("/orgs/invite/:id", handler.InviteUserHandler(enforcer))
+		authGroup.POST("/orgs/invite/:id", handler.InviteUserHandler(temporalClient))
 		authGroup.GET("/orgs/accept/:id", handler.AcceptInviteHandler(enforcer))
 		authGroup.POST("/orgs/update-role/:id", handler.UpdateUserRoleInOrgHandler(enforcer))
 	}

@@ -70,7 +70,7 @@ const Navbar = ({ toggleSidebar, user, role, sidebarOpen }) => {
             {/* Notification center */}
             <div className="relative">
               <Inbox
-                applicationIdentifier="uNc8_gK2ynUR"
+                applicationIdentifier="5-KcoTvnfMGp"
                 subscriberId={user?.email}
                 styles={{
                   root: { 

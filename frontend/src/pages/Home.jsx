@@ -5,7 +5,6 @@ import COLORS from '../constants/Colors';
 import Swal from 'sweetalert2';
 
 const Home = () => {
-  // All existing logic remains exactly the same
   const { user, role } = useOutletContext();
   const [repos, setRepos] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
@@ -38,7 +37,9 @@ const Home = () => {
   }, [navigate]);
 
   const handleRepoCreate = async ({ name, description, private: isPrivate }) => {
+    console.log("hii")
     try {
+      console.log("before")
       const res = await fetch("http://localhost:8080/github/repos", {
         method: "POST",
         credentials: "include",
@@ -47,8 +48,9 @@ const Home = () => {
         },
         body: JSON.stringify({ name, description, private: isPrivate })
       });
-
+      console.log("hello",res)
       const data = await res.json();
+      console.log("hi",data)
 
       if (res.ok) {
         await Swal.fire({
