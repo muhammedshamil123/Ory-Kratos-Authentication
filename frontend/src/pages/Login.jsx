@@ -155,7 +155,6 @@ function Login() {
                 focusRingColor: COLORS.highlight,
                 disabledBackground: COLORS.backgroundSecondary
               }}
-              placeholder="you@example.com"
             />
           </div>
 
@@ -180,7 +179,6 @@ function Login() {
                 focusRingColor: COLORS.highlight,
                 disabledBackground: COLORS.backgroundSecondary
               }}
-              placeholder="••••••••"
             />
           </div>
 

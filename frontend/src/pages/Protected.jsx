@@ -24,7 +24,7 @@ const Protected = () => {
       confirmButtonColor: COLORS.danger,
       customClass: {
         popup: 'rounded-xl shadow-lg'
-      }
+      } 
     });
   };
 
@@ -239,7 +239,6 @@ const UserCard = ({ identity, currentUserId, onRoleUpdate, colors }) => {
 
         <div className="flex flex-wrap items-center gap-2">
           <div className="flex items-center mr-2">
-            <FiShield className="mr-1" style={{ color: colors.textSecondary }} />
             <span 
               className="px-2 py-1 rounded text-xs font-medium"
               style={{

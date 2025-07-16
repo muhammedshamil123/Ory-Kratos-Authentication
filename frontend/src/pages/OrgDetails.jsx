@@ -348,7 +348,6 @@ const UserCard = ({ identity, currentUserId, onRoleUpdate, colors, role }) => {
 
         <div className="flex items-center space-x-4">
           <div className="flex items-center">
-            <FiShield className="mr-1" style={{ color: colors.textSecondary }} />
             <span 
               className="px-2 py-1 rounded text-xs font-medium"
               style={{

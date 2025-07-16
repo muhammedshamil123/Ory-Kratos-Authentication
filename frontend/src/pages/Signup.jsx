@@ -193,7 +193,6 @@ function Signup() {
                 focusRingColor: COLORS.highlight,
                 disabledBackground: COLORS.backgroundSecondary
               }}
-              placeholder="John Doe"
             />
           </div>
 
@@ -218,7 +217,6 @@ function Signup() {
                 focusRingColor: COLORS.highlight,
                 disabledBackground: COLORS.backgroundSecondary
               }}
-              placeholder="you@example.com"
             />
           </div>
 
@@ -248,7 +246,6 @@ function Signup() {
                 focusRingColor: COLORS.highlight,
                 disabledBackground: COLORS.backgroundSecondary
               }}
-              placeholder="••••••••"
             />
             {password && (
               <div className="h-1 mt-1 flex gap-1">
